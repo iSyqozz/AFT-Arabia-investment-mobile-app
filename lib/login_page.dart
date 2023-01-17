@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
 
     //Login Button Widget
     final loginButton = Padding(
-      padding: EdgeInsets.symmetric(vertical: 3.0),
+      padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 90),
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
               shape: RoundedRectangleBorder(
@@ -52,13 +52,13 @@ class _LoginPageState extends State<LoginPage> {
               backgroundColor: Colors.deepOrangeAccent),
           child: Text('Log In', style: TextStyle(color: Colors.white)),
           onPressed: () {
-            Navigator.of(context).pushNamed(HomePage.tag);
+            print('Im trying to login!!');
           }),
     );
 
     //Register Button Widget
     final registerButton = Padding(
-      padding: EdgeInsets.symmetric(vertical: 3.0),
+      padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 90),
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
               shape: RoundedRectangleBorder(
@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
               backgroundColor: Colors.deepOrangeAccent),
           child: Text('Register', style: TextStyle(color: Colors.white)),
           onPressed: () {
-            Navigator.of(context).pushNamed(HomePage.tag);
+            Navigator.of(context).pushNamed(RegisterPage.tag);
           }),
     );
 
@@ -93,9 +93,10 @@ class _LoginPageState extends State<LoginPage> {
           backgroundColor: Colors.white,
           body: Center(
             child: ListView(
-              shrinkWrap: true,
+              shrinkWrap: false,
               padding: EdgeInsets.only(left: 24.0, right: 24.0),
               children: <Widget>[
+                SizedBox(height: 150.0),
                 logo,
                 SizedBox(height: 48.0),
                 email_label,
