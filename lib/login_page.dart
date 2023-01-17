@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cool_app/register_page.dart';
+import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
   static String tag = 'login-page';
