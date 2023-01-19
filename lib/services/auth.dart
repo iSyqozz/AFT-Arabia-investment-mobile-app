@@ -23,14 +23,22 @@ class AuthService {
 
   // sign in method for email and password
 
-  Future signInAnon() async {
+  Future signIn(String email, String pwd) async {
     try {
-      var result = await _auth.signInAnonymously();
+      var result =
+          await _auth.signInWithEmailAndPassword(email: email, password: pwd);
       var user = result.user;
       return _get_user_id(user);
     } catch (e) {
       print(e.toString());
-      return null;
+      if (e.toString() ==
+              '[firebase_auth/user-not-found] There is no user record corresponding to this identifier. The user may have been deleted.' ||
+          e.toString() ==
+              '[firebase_auth/wrong-password] The password is invalid or the user does not have a password.') {
+        return 1;
+      } else {
+        return null;
+      }
     }
   }
 
@@ -45,5 +53,20 @@ class AuthService {
   }
 
   //register with email and password
-
+  Future SignUp(String name, String second_name, String number, String email,
+      String pwd) async {
+    try {
+      var result = await _auth.createUserWithEmailAndPassword(
+          email: email, password: pwd);
+      var user = result.user;
+      return _get_user_id(user);
+    } catch (e) {
+      if (e.toString() ==
+          '[firebase_auth/email-already-in-use] The email address is already in use by another account.') {
+        return 1;
+      } else {
+        return null;
+      }
+    }
+  }
 }

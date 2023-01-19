@@ -1,9 +1,6 @@
 import 'package:aft_arabia/services/auth.dart';
 import 'package:flutter/material.dart';
 
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -15,22 +12,40 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   @override
-  Widget build(BuildContext context) {
-    final first_name_controller = TextEditingController();
-    final second_name_controller = TextEditingController();
-    final number_controller = TextEditingController();
-    final email_controller = TextEditingController();
-    final password_controller = TextEditingController();
-    final confirm_password_controller = TextEditingController();
-    final AuthService _register_checker = AuthService();
+  final AuthService _register_checker = AuthService();
+  final _formkey = GlobalKey<FormState>();
+  final first_name_controller = TextEditingController();
+  final second_name_controller = TextEditingController();
+  final number_controller = TextEditingController();
+  final email_controller = TextEditingController();
+  final password_controller = TextEditingController();
+  final confirm_password_controller = TextEditingController();
+  String in_use = '';
 
+  Widget build(BuildContext context) {
     //name lable and field
+    final in_use_prompt = Center(
+      child: Text(
+        in_use,
+        style: TextStyle(color: Colors.red, fontSize: 15.0),
+      ),
+    );
+
     final name_label = Text(
       '    First Name:',
       style: TextStyle(color: Colors.black54),
     );
 
     final name = TextFormField(
+      validator: (val) {
+        if (val == '') {
+          return 'This Field Cannot Be Empty';
+        } else if (val!.length > 20) {
+          return "This Field Can't Have more than 20 characters";
+        } else {
+          return null;
+        }
+      },
       controller: first_name_controller,
       keyboardType: TextInputType.name,
       autofocus: false,
@@ -48,6 +63,15 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     final second_name = TextFormField(
+      validator: (val) {
+        if (val == '') {
+          return 'This Field Cannot Be Empty';
+        } else if (val!.length > 20) {
+          return "This Field Can't Have more than 20 characters";
+        } else {
+          return null;
+        }
+      },
       controller: second_name_controller,
       keyboardType: TextInputType.name,
       autofocus: false,
@@ -65,6 +89,15 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     final number = TextFormField(
+      validator: (val) {
+        if (val == '') {
+          return 'This Field Cannot Be Empty';
+        } else if (val!.length > 20) {
+          return "This Field Can't Have more than 20 Numbers";
+        } else {
+          return null;
+        }
+      },
       controller: number_controller,
       keyboardType: TextInputType.number,
       autofocus: false,
@@ -82,6 +115,20 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     final email = TextFormField(
+      validator: (val) {
+        if (val == '') {
+          return 'This Field Cannot Be Empty';
+        } else if (!RegExp(
+                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+            .hasMatch(val!)) {
+          return 'Please Enter Valid Email Address';
+          ;
+        } else if (val.length > 320) {
+          return "This Field Can't Have more than 20 characters";
+        } else {
+          return null;
+        }
+      },
       controller: email_controller,
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
@@ -98,6 +145,24 @@ class _RegisterPageState extends State<RegisterPage> {
       style: TextStyle(color: Colors.black54),
     );
     final password = TextFormField(
+      validator: (val) {
+        if (val == '') {
+          return 'This Field Cannot Be Empty';
+        } else if (val!.length > 100) {
+          return "This Field Can't Have more than 100 characters";
+        } else if (val.length < 8) {
+          return "Password Can't Have less than 8 Characters";
+        } else if ((!RegExp('(?=.*[A-Z])').hasMatch(val))) {
+          return "Password Must Have One Uppercase Letter";
+        } else if ((!RegExp('(?=.*[0-9])').hasMatch(val))) {
+          return "Password Must Have One Digit";
+        } else if ((RegExp('(?=.*[\(\)-+_!@#\$%^&*.,? \n/\"\'\:\;])')
+            .hasMatch(val))) {
+          return "Password Can't Contain Special Characters";
+        } else {
+          return null;
+        }
+      },
       controller: password_controller,
       autofocus: false,
       obscureText: true,
@@ -115,6 +180,15 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     final confirm_password = TextFormField(
+      validator: (val) {
+        if (val == '') {
+          return 'This Field Cannot Be Empty';
+        } else if (val != password_controller.text) {
+          return "Input Doesn't match Password";
+        } else {
+          return null;
+        }
+      },
       controller: confirm_password_controller,
       autofocus: false,
       obscureText: true,
@@ -137,7 +211,28 @@ class _RegisterPageState extends State<RegisterPage> {
               backgroundColor: Colors.deepOrangeAccent),
           child: Text('Finish Registeration',
               style: TextStyle(color: Colors.white)),
-          onPressed: () {}),
+          onPressed: () async {
+            if (_formkey.currentState!.validate()) {
+              dynamic res = await _register_checker.SignUp(
+                  first_name_controller.text,
+                  second_name_controller.text,
+                  number_controller.text,
+                  email_controller.text,
+                  password_controller.text);
+              if (res == null) {
+                setState(() {
+                  in_use = 'Check Internet Connection';
+                });
+              } else if (res == 1) {
+                setState(() {
+                  in_use = 'Email is already registered';
+                });
+              } else {
+                Navigator.pop(context);
+                print(res.uid);
+              }
+            }
+          }),
     );
 
     final return_button = Padding(
@@ -163,33 +258,39 @@ class _RegisterPageState extends State<RegisterPage> {
         child: Scaffold(
           backgroundColor: Colors.white,
           body: Center(
-            child: ListView(
-              shrinkWrap: false,
-              padding: EdgeInsets.only(left: 24.0, right: 24.0),
-              children: <Widget>[
-                SizedBox(height: 80.0),
-                name_label,
-                name,
-                SizedBox(height: 15.0),
-                second_name_label,
-                second_name,
-                SizedBox(height: 15.0),
-                number_label,
-                number,
-                SizedBox(height: 15.0),
-                email_label,
-                email,
-                SizedBox(height: 15.0),
-                password_label,
-                password,
-                SizedBox(height: 15.0),
-                confirm_password_lable,
-                confirm_password,
-                SizedBox(height: 40.0),
-                registerButton,
-                return_button,
-              ],
-            ),
+            child: Form(
+                key: _formkey,
+                child: ListView(
+                  shrinkWrap: false,
+                  padding: EdgeInsets.only(left: 24.0, right: 24.0),
+                  children: <Widget>[
+                    SizedBox(height: 80.0),
+                    name_label,
+                    name,
+                    SizedBox(height: 15.0),
+                    second_name_label,
+                    second_name,
+                    SizedBox(height: 15.0),
+                    number_label,
+                    number,
+                    SizedBox(height: 15.0),
+                    email_label,
+                    email,
+                    SizedBox(height: 15.0),
+                    password_label,
+                    password,
+                    SizedBox(height: 15.0),
+                    confirm_password_lable,
+                    confirm_password,
+                    SizedBox(height: 20.0),
+                    registerButton,
+                    return_button,
+                    SizedBox(
+                      height: 5.0,
+                    ),
+                    in_use_prompt
+                  ],
+                )),
           ),
         ));
   }

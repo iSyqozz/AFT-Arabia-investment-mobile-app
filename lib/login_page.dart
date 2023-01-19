@@ -11,11 +11,13 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   @override
-  Widget build(BuildContext context) {
-    final login_email_controller = TextEditingController();
-    final login_password_controller = TextEditingController();
-    final AuthService _login_checker = AuthService();
+  final AuthService _login_checker = AuthService();
+  final _formkey = GlobalKey<FormState>();
+  final login_email_controller = TextEditingController();
+  final login_password_controller = TextEditingController();
+  String error = '';
 
+  Widget build(BuildContext context) {
     final logo = Hero(
       tag: 'hero',
       child: CircleAvatar(
@@ -27,6 +29,20 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     final email = TextFormField(
+      validator: (val) {
+        if (val == '') {
+          return 'This Field Cannot Be Empty';
+        } else if (!RegExp(
+                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+            .hasMatch(val!)) {
+          return 'Please Enter Valid Email Address';
+          ;
+        } else if (val.length > 320) {
+          return "This Field Can't Have more than 20 characters";
+        } else {
+          return null;
+        }
+      },
       controller: login_email_controller,
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
@@ -38,6 +54,24 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     final password = TextFormField(
+      validator: (val) {
+        if (val == '') {
+          return 'This Field Cannot Be Empty';
+        } else if (val!.length > 100) {
+          return "This Field Can't Have more than 100 characters";
+        } else if (val.length < 8) {
+          return "Password Can't Have less than 8 Characters";
+        } else if ((!RegExp('(?=.*[A-Z])').hasMatch(val))) {
+          return "Password Must Have One Uppercase Letter";
+        } else if ((!RegExp('(?=.*[0-9])').hasMatch(val))) {
+          return "Password Must Have One Digit";
+        } else if ((RegExp('(?=.*[\(\)-+_!@#\$%^&*.,? \n/\"\'\:\;])')
+            .hasMatch(val))) {
+          return "Password Can't Contain Special Characters";
+        } else {
+          return null;
+        }
+      },
       controller: login_password_controller,
       autofocus: false,
       obscureText: true,
@@ -60,11 +94,18 @@ class _LoginPageState extends State<LoginPage> {
               backgroundColor: Colors.deepOrangeAccent),
           child: Text('Log In', style: TextStyle(color: Colors.white)),
           onPressed: () async {
-            dynamic res = await _login_checker.signInAnon();
-            if (res == null) {
-              print('sign in failed');
-            } else {
-              print(res.uid);
+            if (_formkey.currentState!.validate()) {
+              dynamic res = await _login_checker.signIn(
+                  login_email_controller.text, login_password_controller.text);
+              if (res == null) {
+                setState(() {
+                  error = 'Check Internet Connection';
+                });
+              } else if (res == 1) {
+                setState(() {
+                  error = 'Email or Password Incorect';
+                });
+              }
             }
           }),
     );
@@ -97,6 +138,13 @@ class _LoginPageState extends State<LoginPage> {
       style: TextStyle(color: Colors.black54),
     );
 
+    final error_prompt = Center(
+      child: Text(
+        error,
+        style: TextStyle(color: Colors.red, fontSize: 15.0),
+      ),
+    );
+
     // creating main scaffold container, putting everything together, and returning the the page
     return GestureDetector(
         onTap: () {
@@ -104,25 +152,30 @@ class _LoginPageState extends State<LoginPage> {
         },
         child: Scaffold(
           backgroundColor: Colors.white,
-          body: Center(
-            child: ListView(
-              shrinkWrap: false,
-              padding: EdgeInsets.only(left: 24.0, right: 24.0),
-              children: <Widget>[
-                SizedBox(height: 150.0),
-                logo,
-                SizedBox(height: 48.0),
-                email_label,
-                SizedBox(height: 4.0),
-                email,
-                SizedBox(height: 8.0),
-                password_label,
-                SizedBox(height: 4.0),
-                password,
-                SizedBox(height: 24.0),
-                loginButton,
-                registerButton,
-              ],
+          body: Form(
+            key: _formkey,
+            child: Center(
+              child: ListView(
+                shrinkWrap: false,
+                padding: EdgeInsets.only(left: 24.0, right: 24.0),
+                children: <Widget>[
+                  SizedBox(height: 150.0),
+                  logo,
+                  SizedBox(height: 48.0),
+                  email_label,
+                  SizedBox(height: 4.0),
+                  email,
+                  SizedBox(height: 8.0),
+                  password_label,
+                  SizedBox(height: 4.0),
+                  password,
+                  SizedBox(height: 24.0),
+                  loginButton,
+                  registerButton,
+                  SizedBox(height: 5.0),
+                  error_prompt
+                ],
+              ),
             ),
           ),
         ));
