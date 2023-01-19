@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "148021748774",
+    "project_id": "aft-arabia",
+    "storage_bucket": "aft-arabia.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:148021748774:android:6062a54511b7b73d0972e7",
+        "android_client_info": {
+          "package_name": "com.example.cool_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "148021748774-blkpu259juajoeijspoeopa60ovgnq7l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHw3kBg05vxQCbhMiHyvsZYAqfZ-Z2G4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "148021748774-blkpu259juajoeijspoeopa60ovgnq7l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "148021748774-mfucn0vmpp82q898mj0l1ce81fkaii7u.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.coolApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

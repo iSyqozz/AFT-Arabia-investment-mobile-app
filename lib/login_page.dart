@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:aft_arabia/services/auth.dart';
 import 'register_page.dart';
+import 'package:aft_arabia/home.dart';
 
 class LoginPage extends StatefulWidget {
   static String tag = 'login-page';
@@ -10,6 +12,10 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
+    final login_email_controller = TextEditingController();
+    final login_password_controller = TextEditingController();
+    final AuthService _login_checker = AuthService();
+
     final logo = Hero(
       tag: 'hero',
       child: CircleAvatar(
@@ -21,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     final email = TextFormField(
+      controller: login_email_controller,
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
       decoration: InputDecoration(
@@ -31,6 +38,7 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     final password = TextFormField(
+      controller: login_password_controller,
       autofocus: false,
       obscureText: true,
       decoration: InputDecoration(
@@ -51,8 +59,13 @@ class _LoginPageState extends State<LoginPage> {
               padding: EdgeInsets.all(12),
               backgroundColor: Colors.deepOrangeAccent),
           child: Text('Log In', style: TextStyle(color: Colors.white)),
-          onPressed: () {
-            print('Im trying to login!!');
+          onPressed: () async {
+            dynamic res = await _login_checker.signInAnon();
+            if (res == null) {
+              print('sign in failed');
+            } else {
+              print(res.uid);
+            }
           }),
     );
 

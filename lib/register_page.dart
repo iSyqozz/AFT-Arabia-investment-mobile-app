@@ -1,4 +1,11 @@
+import 'package:aft_arabia/services/auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterPage extends StatefulWidget {
   static String tag = 'register-page';
@@ -9,15 +16,13 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
-    final logo = Hero(
-      tag: 'hero',
-      child: CircleAvatar(
-        backgroundColor: Color.fromARGB(0, 180, 32, 32),
-        radius: 48.0,
-        child: Image.asset(
-            'lib/images/png-clipart-hamburger-button-computer-icons-marmon-keystone-canada-menu-red-sea.png'),
-      ),
-    );
+    final first_name_controller = TextEditingController();
+    final second_name_controller = TextEditingController();
+    final number_controller = TextEditingController();
+    final email_controller = TextEditingController();
+    final password_controller = TextEditingController();
+    final confirm_password_controller = TextEditingController();
+    final AuthService _register_checker = AuthService();
 
     //name lable and field
     final name_label = Text(
@@ -26,6 +31,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     final name = TextFormField(
+      controller: first_name_controller,
       keyboardType: TextInputType.name,
       autofocus: false,
       decoration: InputDecoration(
@@ -42,6 +48,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     final second_name = TextFormField(
+      controller: second_name_controller,
       keyboardType: TextInputType.name,
       autofocus: false,
       decoration: InputDecoration(
@@ -58,6 +65,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     final number = TextFormField(
+      controller: number_controller,
       keyboardType: TextInputType.number,
       autofocus: false,
       decoration: InputDecoration(
@@ -74,6 +82,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     final email = TextFormField(
+      controller: email_controller,
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
       decoration: InputDecoration(
@@ -89,6 +98,7 @@ class _RegisterPageState extends State<RegisterPage> {
       style: TextStyle(color: Colors.black54),
     );
     final password = TextFormField(
+      controller: password_controller,
       autofocus: false,
       obscureText: true,
       decoration: InputDecoration(
@@ -105,6 +115,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     final confirm_password = TextFormField(
+      controller: confirm_password_controller,
       autofocus: false,
       obscureText: true,
       decoration: InputDecoration(
