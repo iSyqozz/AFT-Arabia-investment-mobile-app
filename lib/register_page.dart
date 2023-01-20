@@ -10,7 +10,8 @@ class RegisterPage extends StatefulWidget {
   _RegisterPageState createState() => new _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends State<RegisterPage>
+    with TickerProviderStateMixin {
   @override
   final AuthService _register_checker = AuthService();
   final _formkey = GlobalKey<FormState>();
@@ -21,13 +22,35 @@ class _RegisterPageState extends State<RegisterPage> {
   final password_controller = TextEditingController();
   final confirm_password_controller = TextEditingController();
   String in_use = '';
+  bool _is_visible = false;
+  bool _is_error_vis = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  late final AnimationController _controller = AnimationController(
+    duration: const Duration(seconds: 1),
+    vsync: this,
+  )..repeat(reverse: false);
+
+  // Create an animation with value of type "double"
+  late final Animation<double> _animation = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.linear,
+  );
 
   Widget build(BuildContext context) {
     //name lable and field
-    final in_use_prompt = Center(
-      child: Text(
-        in_use,
-        style: TextStyle(color: Colors.red, fontSize: 15.0),
+    final in_use_prompt = Visibility(
+      visible: _is_error_vis,
+      child: Center(
+        child: Text(
+          in_use,
+          style: TextStyle(color: Colors.red, fontSize: 15.0),
+        ),
       ),
     );
 
@@ -213,6 +236,13 @@ class _RegisterPageState extends State<RegisterPage> {
               style: TextStyle(color: Colors.white)),
           onPressed: () async {
             if (_formkey.currentState!.validate()) {
+              setState(() {
+                _is_visible = true;
+                _is_error_vis = false;
+              });
+              _controller.repeat();
+              await Future.delayed(Duration(seconds: 1));
+
               dynamic res = await _register_checker.SignUp(
                   first_name_controller.text,
                   second_name_controller.text,
@@ -222,15 +252,23 @@ class _RegisterPageState extends State<RegisterPage> {
               if (res == null) {
                 setState(() {
                   in_use = 'Check Internet Connection';
+                  _is_error_vis = true;
                 });
               } else if (res == 1) {
                 setState(() {
                   in_use = 'Email is already registered';
+                  _is_error_vis = true;
                 });
               } else {
                 Navigator.pop(context);
+                dispose();
                 print(res.uid);
               }
+
+              _controller.stop();
+              setState(() {
+                _is_visible = false;
+              });
             }
           }),
     );
@@ -248,6 +286,67 @@ class _RegisterPageState extends State<RegisterPage> {
           onPressed: () {
             Navigator.pop(context);
           }),
+    );
+
+    final Loading_ind = Visibility(
+      visible: _is_visible,
+      child: Stack(children: [
+        Center(
+          child: RotationTransition(
+            turns: _animation,
+            child: Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: Wrap(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(8),
+                            bottomLeft: Radius.circular(20),
+                            bottomRight: Radius.circular(8),
+                            topLeft: Radius.circular(20)),
+                        color: Colors.deepOrange,
+                        shape: BoxShape.rectangle),
+                  ),
+                  Container(
+                    width: 30,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                        color: Colors.white, shape: BoxShape.circle),
+                  ),
+                  Container(
+                    width: 30,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                        color: Colors.white, shape: BoxShape.circle),
+                  ),
+                  Container(
+                    width: 10,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(20),
+                            bottomLeft: Radius.circular(8),
+                            bottomRight: Radius.circular(20),
+                            topLeft: Radius.circular(8)),
+                        color: Colors.deepOrange,
+                        shape: BoxShape.rectangle),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Center(
+            child: Text('Signing\nin',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.teal,
+                )))
+      ]),
     );
 
     // creating main scaffold container, putting everything together, and returning the the page
@@ -286,9 +385,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     registerButton,
                     return_button,
                     SizedBox(
-                      height: 5.0,
+                      height: 10.0,
                     ),
-                    in_use_prompt
+                    in_use_prompt,
+                    SizedBox(
+                      height: 30,
+                    ),
+                    Loading_ind
                   ],
                 )),
           ),

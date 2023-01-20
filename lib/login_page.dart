@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:aft_arabia/services/auth.dart';
 import 'register_page.dart';
-import 'package:aft_arabia/home.dart';
 
 class LoginPage extends StatefulWidget {
   static String tag = 'login-page';
@@ -9,14 +8,29 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => new _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  @override
+class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final AuthService _login_checker = AuthService();
   final _formkey = GlobalKey<FormState>();
   final login_email_controller = TextEditingController();
   final login_password_controller = TextEditingController();
+  bool _is_visible = false;
+  bool _is_error_vis = false;
   String error = '';
 
+  // Create a controller
+
+  late final AnimationController _controller = AnimationController(
+    duration: const Duration(seconds: 1),
+    vsync: this,
+  )..repeat(reverse: false);
+
+  // Create an animation with value of type "double"
+  late final Animation<double> _animation = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.linear,
+  );
+
+  @override
   Widget build(BuildContext context) {
     final logo = Hero(
       tag: 'hero',
@@ -36,7 +50,6 @@ class _LoginPageState extends State<LoginPage> {
                 r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
             .hasMatch(val!)) {
           return 'Please Enter Valid Email Address';
-          ;
         } else if (val.length > 320) {
           return "This Field Can't Have more than 20 characters";
         } else {
@@ -82,6 +95,67 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
 
+    //loading spinning indicator
+    final Loading_ind = Visibility(
+      visible: _is_visible,
+      child: Stack(children: [
+        Center(
+          child: RotationTransition(
+            turns: _animation,
+            child: Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: Wrap(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(8),
+                            bottomLeft: Radius.circular(20),
+                            bottomRight: Radius.circular(8),
+                            topLeft: Radius.circular(20)),
+                        color: Colors.deepOrange,
+                        shape: BoxShape.rectangle),
+                  ),
+                  Container(
+                    width: 30,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                        color: Colors.white, shape: BoxShape.circle),
+                  ),
+                  Container(
+                    width: 30,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                        color: Colors.white, shape: BoxShape.circle),
+                  ),
+                  Container(
+                    width: 10,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(20),
+                            bottomLeft: Radius.circular(8),
+                            bottomRight: Radius.circular(20),
+                            topLeft: Radius.circular(8)),
+                        color: Colors.deepOrange,
+                        shape: BoxShape.rectangle),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Center(
+            child: Text('Signing\nin',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.teal,
+                )))
+      ]),
+    );
     //Login Button Widget
     final loginButton = Padding(
       padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 90),
@@ -95,17 +169,31 @@ class _LoginPageState extends State<LoginPage> {
           child: Text('Log In', style: TextStyle(color: Colors.white)),
           onPressed: () async {
             if (_formkey.currentState!.validate()) {
+              setState(() {
+                _is_visible = true;
+                _is_error_vis = false;
+              });
+              _controller.repeat();
+              await Future.delayed(Duration(seconds: 1));
+
               dynamic res = await _login_checker.signIn(
                   login_email_controller.text, login_password_controller.text);
               if (res == null) {
                 setState(() {
+                  _is_error_vis = true;
                   error = 'Check Internet Connection';
                 });
               } else if (res == 1) {
                 setState(() {
-                  error = 'Email or Password Incorect';
+                  _is_error_vis = true;
+                  error = 'Email or Password Incorrect';
                 });
               }
+
+              _controller.stop();
+              setState(() {
+                _is_visible = false;
+              });
             }
           }),
     );
@@ -138,10 +226,13 @@ class _LoginPageState extends State<LoginPage> {
       style: TextStyle(color: Colors.black54),
     );
 
-    final error_prompt = Center(
-      child: Text(
-        error,
-        style: TextStyle(color: Colors.red, fontSize: 15.0),
+    final error_prompt = Visibility(
+      visible: _is_error_vis,
+      child: Center(
+        child: Text(
+          error,
+          style: TextStyle(color: Colors.red, fontSize: 15.0),
+        ),
       ),
     );
 
@@ -172,8 +263,10 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(height: 24.0),
                   loginButton,
                   registerButton,
-                  SizedBox(height: 5.0),
-                  error_prompt
+                  SizedBox(height: 20.0),
+                  error_prompt,
+                  SizedBox(height: 40.0),
+                  Loading_ind,
                 ],
               ),
             ),

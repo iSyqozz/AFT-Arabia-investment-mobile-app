@@ -31,10 +31,11 @@ class AuthService {
       return _get_user_id(user);
     } catch (e) {
       print(e.toString());
-      if (e.toString() ==
-              '[firebase_auth/user-not-found] There is no user record corresponding to this identifier. The user may have been deleted.' ||
+      if (e.toString() == '[firebase_auth/user-not-found] There is no user record corresponding to this identifier. The user may have been deleted.' ||
           e.toString() ==
-              '[firebase_auth/wrong-password] The password is invalid or the user does not have a password.') {
+              '[firebase_auth/wrong-password] The password is invalid or the user does not have a password.' ||
+          e.toString() ==
+              '[firebase_auth/invalid-email] The email address is badly formatted.') {
         return 1;
       } else {
         return null;
@@ -61,6 +62,7 @@ class AuthService {
       var user = result.user;
       return _get_user_id(user);
     } catch (e) {
+      print(e.toString());
       if (e.toString() ==
           '[firebase_auth/email-already-in-use] The email address is already in use by another account.') {
         return 1;
