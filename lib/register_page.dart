@@ -32,9 +32,9 @@ class _RegisterPageState extends State<RegisterPage>
   }
 
   late final AnimationController _controller = AnimationController(
-    duration: const Duration(seconds: 1),
+    duration: const Duration(milliseconds: 10),
     vsync: this,
-  )..repeat(reverse: false);
+  )..repeat(reverse: true);
 
   // Create an animation with value of type "double"
   late final Animation<double> _animation = CurvedAnimation(
@@ -340,7 +340,7 @@ class _RegisterPageState extends State<RegisterPage>
           ),
         ),
         Center(
-            child: Text('Signing\nin',
+            child: Text('Signing\nup',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,

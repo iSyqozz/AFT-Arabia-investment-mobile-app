@@ -22,7 +22,6 @@ class MyApp extends StatelessWidget {
   final routes = <String, WidgetBuilder>{
     LoginPage.tag: (context) => LoginPage(),
     RegisterPage.tag: (context) => RegisterPage(),
-    HomePage.tag: (context) => HomePage(),
   };
 
   //main build method for the application

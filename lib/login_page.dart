@@ -20,9 +20,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   // Create a controller
 
   late final AnimationController _controller = AnimationController(
-    duration: const Duration(seconds: 1),
+    duration: const Duration(milliseconds: 10),
     vsync: this,
-  )..repeat(reverse: false);
+  )..repeat(reverse: true);
 
   // Create an animation with value of type "double"
   late final Animation<double> _animation = CurvedAnimation(
@@ -188,8 +188,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   _is_error_vis = true;
                   error = 'Email or Password Incorrect';
                 });
+              } else {
+                dispose();
               }
-
               _controller.stop();
               setState(() {
                 _is_visible = false;
