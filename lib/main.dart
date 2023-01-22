@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 
-import 'login_page.dart';
 import 'register_page.dart';
-import 'home.dart';
+import 'contact_page.dart';
 import 'package:aft_arabia/wrapper.dart';
 import 'package:aft_arabia/services/auth.dart';
 
@@ -20,9 +18,10 @@ void main() async {
 class MyApp extends StatelessWidget {
   //creating routes for user navigation
   final routes = <String, WidgetBuilder>{
-    LoginPage.tag: (context) => LoginPage(),
     RegisterPage.tag: (context) => RegisterPage(),
   };
+
+  final _scaffold_key = GlobalKey<ScaffoldMessengerState>();
 
   //main build method for the application
   @override
@@ -31,6 +30,7 @@ class MyApp extends StatelessWidget {
       initialData: null,
       value: AuthService().user,
       child: MaterialApp(
+        scaffoldMessengerKey: _scaffold_key,
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.deepOrange,

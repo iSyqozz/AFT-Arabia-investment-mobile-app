@@ -19,17 +19,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   // Create a controller
 
-  late final AnimationController _controller = AnimationController(
-    duration: const Duration(milliseconds: 10),
-    vsync: this,
-  )..repeat(reverse: true);
-
-  // Create an animation with value of type "double"
-  late final Animation<double> _animation = CurvedAnimation(
-    parent: _controller,
-    curve: Curves.linear,
-  );
-
   @override
   Widget build(BuildContext context) {
     final logo = Hero(
@@ -41,6 +30,21 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             'lib/images/png-clipart-hamburger-button-computer-icons-marmon-keystone-canada-menu-red-sea.png'),
       ),
     );
+
+    late final AnimationController _controller = AnimationController(
+      duration: const Duration(milliseconds: 10),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    // Create an animation with value of type "double"
+    late final Animation<double> _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.linear,
+    );
+    void dispose() {
+      _controller.dispose();
+      super.dispose();
+    }
 
     final email = TextFormField(
       validator: (val) {
@@ -190,11 +194,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 });
               } else {
                 dispose();
-              }
-              _controller.stop();
-              setState(() {
                 _is_visible = false;
-              });
+                _controller.stop();
+                setState(() {
+                  _is_visible = false;
+                });
+              }
             }
           }),
     );

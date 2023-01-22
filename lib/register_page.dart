@@ -6,7 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterPage extends StatefulWidget {
   static String tag = 'register-page';
-  @override
   _RegisterPageState createState() => new _RegisterPageState();
 }
 
@@ -42,6 +41,7 @@ class _RegisterPageState extends State<RegisterPage>
     curve: Curves.linear,
   );
 
+  @override
   Widget build(BuildContext context) {
     //name lable and field
     final in_use_prompt = Visibility(
@@ -144,7 +144,7 @@ class _RegisterPageState extends State<RegisterPage>
         } else if (!RegExp(
                 r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
             .hasMatch(val!)) {
-          return 'Please Enter Valid Email Address';
+          return 'Please Enter a Valid Email Address';
           ;
         } else if (val.length > 320) {
           return "This Field Can't Have more than 20 characters";
