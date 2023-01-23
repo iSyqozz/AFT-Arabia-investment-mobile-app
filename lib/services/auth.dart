@@ -28,7 +28,7 @@ class AuthService {
       var result =
           await _auth.signInWithEmailAndPassword(email: email, password: pwd);
       var user = result.user;
-      return _get_user_id(user);
+      return user;
     } catch (e) {
       print(e.toString());
       if (e.toString() == '[firebase_auth/user-not-found] There is no user record corresponding to this identifier. The user may have been deleted.' ||
@@ -40,6 +40,16 @@ class AuthService {
       } else {
         return null;
       }
+    }
+  }
+
+  Future resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return 1;
+    } catch (e) {
+      print(e.toString());
+      return null;
     }
   }
 

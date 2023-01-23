@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'verify.dart';
 
 class RegisterPage extends StatefulWidget {
   static String tag = 'register-page';
@@ -260,7 +261,8 @@ class _RegisterPageState extends State<RegisterPage>
                   _is_error_vis = true;
                 });
               } else {
-                Navigator.pop(context);
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => VerifyPage()));
                 dispose();
                 print(res.uid);
               }

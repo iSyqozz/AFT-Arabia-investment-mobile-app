@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:aft_arabia/services/auth.dart';
 import 'register_page.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'dart:async';
+import 'dart:io';
+import 'reset_pass_page.dart';
+import 'verify.dart';
 
 class LoginPage extends StatefulWidget {
   static String tag = 'login-page';
@@ -16,21 +21,34 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   bool _is_visible = false;
   bool _is_error_vis = false;
   String error = '';
+  bool _is_transition = false;
 
-  // Create a controller
+  final Transition = Container(
+      child: SpinKitCubeGrid(
+    color: Colors.deepOrangeAccent,
+  ));
+
+  Timer scheduleTimeout([int milliseconds = 2000, String name = 'sign in']) =>
+      Timer(Duration(milliseconds: milliseconds), () {
+        setState(() {
+          if (name == 'Transition Register') {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => RegisterPage()));
+          } else if (name == 'Transition reset') {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => ResetPassPage()));
+          }
+        });
+
+        sleep(Duration(milliseconds: 20));
+
+        setState(() {
+          _is_transition = false;
+        });
+      });
 
   @override
   Widget build(BuildContext context) {
-    final logo = Hero(
-      tag: 'hero',
-      child: CircleAvatar(
-        backgroundColor: Color.fromARGB(0, 180, 32, 32),
-        radius: 48.0,
-        child: Image.asset(
-            'lib/images/png-clipart-hamburger-button-computer-icons-marmon-keystone-canada-menu-red-sea.png'),
-      ),
-    );
-
     late final AnimationController _controller = AnimationController(
       duration: const Duration(milliseconds: 10),
       vsync: this,
@@ -41,10 +59,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       parent: _controller,
       curve: Curves.linear,
     );
-    void dispose() {
-      _controller.dispose();
-      super.dispose();
-    }
+
+    final logo = Image.asset(
+      'lib/images/logo.png',
+      height: 400,
+      width: 400,
+    );
 
     final email = TextFormField(
       validator: (val) {
@@ -185,20 +205,25 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               if (res == null) {
                 setState(() {
                   _is_error_vis = true;
+                  _is_visible = false;
                   error = 'Check Internet Connection';
                 });
               } else if (res == 1) {
                 setState(() {
+                  _is_visible = false;
                   _is_error_vis = true;
                   error = 'Email or Password Incorrect';
                 });
               } else {
-                dispose();
-                _is_visible = false;
-                _controller.stop();
+                if (!res.emailVerified) {
+                  Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => VerifyPage()));
+                }
                 setState(() {
+                  _is_error_vis = false;
                   _is_visible = false;
                 });
+                dispose();
               }
             }
           }),
@@ -206,19 +231,21 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
     //Register Button Widget
     final registerButton = Padding(
-      padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 90),
-      child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-              padding: EdgeInsets.all(12),
-              backgroundColor: Colors.deepOrangeAccent),
-          child: Text('Register', style: TextStyle(color: Colors.white)),
-          onPressed: () {
-            Navigator.of(context).pushNamed(RegisterPage.tag);
-          }),
-    );
+        padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 90),
+        child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                padding: EdgeInsets.all(12),
+                backgroundColor: Colors.deepOrangeAccent),
+            child: Text('Register', style: TextStyle(color: Colors.white)),
+            onPressed: () {
+              setState(() {
+                _is_transition = true;
+              });
+              scheduleTimeout(2000, 'Transition Register');
+            }));
 
     //email prompt
     final email_label = Text(
@@ -242,41 +269,69 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       ),
     );
 
-    // creating main scaffold container, putting everything together, and returning the the page
-    return GestureDetector(
-        onTap: () {
-          FocusScope.of(context).requestFocus(new FocusNode());
-        },
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          body: Form(
-            key: _formkey,
-            child: Center(
-              child: ListView(
-                shrinkWrap: false,
-                padding: EdgeInsets.only(left: 24.0, right: 24.0),
-                children: <Widget>[
-                  SizedBox(height: 150.0),
-                  logo,
-                  SizedBox(height: 48.0),
-                  email_label,
-                  SizedBox(height: 4.0),
-                  email,
-                  SizedBox(height: 8.0),
-                  password_label,
-                  SizedBox(height: 4.0),
-                  password,
-                  SizedBox(height: 24.0),
-                  loginButton,
-                  registerButton,
-                  SizedBox(height: 20.0),
-                  error_prompt,
-                  SizedBox(height: 40.0),
-                  Loading_ind,
-                ],
-              ),
-            ),
+    final reset_pwd_button = Row(
+      children: [
+        Text(
+          'Forgot Password?',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.blueGrey,
           ),
-        ));
+        ),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _is_transition = true;
+            });
+            scheduleTimeout(2000, 'Transition reset');
+          },
+          child: Text(
+            '  Tap Here',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: Colors.lightBlueAccent),
+          ),
+        )
+      ],
+    );
+
+    // creating main scaffold container, putting everything together, and returning the the page
+    return _is_transition
+        ? Transition
+        : GestureDetector(
+            onTap: () {
+              FocusScope.of(context).requestFocus(new FocusNode());
+            },
+            child: Scaffold(
+              backgroundColor: Colors.white,
+              body: Form(
+                key: _formkey,
+                child: Center(
+                  child: ListView(
+                    shrinkWrap: false,
+                    padding: EdgeInsets.only(left: 24.0, right: 24.0),
+                    children: <Widget>[
+                      logo,
+                      email_label,
+                      SizedBox(height: 4.0),
+                      email,
+                      SizedBox(height: 8.0),
+                      password_label,
+                      SizedBox(height: 4.0),
+                      password,
+                      SizedBox(height: 24.0),
+                      loginButton,
+                      registerButton,
+                      SizedBox(height: 20.0),
+                      error_prompt,
+                      SizedBox(height: 20.0),
+                      Loading_ind,
+                      SizedBox(height: 50.0),
+                      reset_pwd_button
+                    ],
+                  ),
+                ),
+              ),
+            ));
   }
 }
