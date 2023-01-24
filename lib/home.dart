@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
-
+import 'security-page.dart';
 import 'package:aft_arabia/services/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'contact_page.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'services/database.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,6 +29,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   MaterialColor snackbar_col = Colors.teal;
   bool _is_transition = true;
 
+  String display_name = '---';
+  String display_second_name = '---';
+  String? curr_user_id = '---';
+
   final Transition = Container(
       child: SpinKitCubeGrid(
     color: Colors.deepOrangeAccent,
@@ -38,6 +44,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           if (name == 'Transition Contact') {
             Navigator.of(context)
                 .push(MaterialPageRoute(builder: (context) => ContactPage()));
+          } else if (name == 'Transition Security') {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => SecurityPage()));
           }
         });
 
@@ -74,8 +83,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
+  void set_display_name(String? uid) {
+    print('setting name...');
+    final temp = DatabaseService().fetch_data(uid);
+    temp.get().then((value) {
+      final temp = value.data() as Map<String, dynamic>;
+      setState(() {
+        display_name = temp['name'];
+        display_second_name = temp['second name'];
+        curr_user_id = uid;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<User?>(context);
+
+    if (user != null && user.uid != curr_user_id) {
+      set_display_name(user.uid);
+    }
+
     if (_is_transition) {
       scheduleTimeout(2000);
     }
@@ -277,7 +305,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
 
     //settings Button
-    final Widget settings_button = Visibility(
+    final Widget account_button = Visibility(
       visible: _side_menu_buttons_visible,
       child: AnimatedOpacity(
         opacity: _visible ? 1.0 : 0.0,
@@ -292,7 +320,58 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     padding: EdgeInsets.fromLTRB(30, 12, 30, 10),
                     backgroundColor: Colors.deepOrange),
-                child: Text('Settings',
+                child: Text('Account',
+                    style: TextStyle(color: Colors.white, fontSize: 13)),
+                onPressed: () {}),
+          ),
+        ),
+      ),
+    );
+
+    final Widget security_button = Visibility(
+      visible: _side_menu_buttons_visible,
+      child: AnimatedOpacity(
+        opacity: _visible ? 1.0 : 0.0,
+        duration: Duration(milliseconds: 500),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 5),
+            child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    padding: EdgeInsets.fromLTRB(30, 12, 30, 10),
+                    backgroundColor: Colors.deepOrange),
+                child: Text('Security',
+                    style: TextStyle(color: Colors.white, fontSize: 13)),
+                onPressed: () {
+                  setState(() {
+                    _is_transition = true;
+                  });
+                  scheduleTimeout(2000, 'Transition Security');
+                }),
+          ),
+        ),
+      ),
+    );
+
+    final Widget about_us = Visibility(
+      visible: _side_menu_buttons_visible,
+      child: AnimatedOpacity(
+        opacity: _visible ? 1.0 : 0.0,
+        duration: Duration(milliseconds: 500),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 5),
+            child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    padding: EdgeInsets.fromLTRB(30, 12, 30, 10),
+                    backgroundColor: Colors.deepOrange),
+                child: Text('About Us',
                     style: TextStyle(color: Colors.white, fontSize: 13)),
                 onPressed: () {}),
           ),
@@ -333,7 +412,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           show_menu();
         },
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 12, 0, 0),
+          padding: const EdgeInsets.fromLTRB(10, 7, 0, 0),
           child: AnimatedIcon(
             size: 30,
             icon: AnimatedIcons.menu_arrow,
@@ -366,10 +445,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               width: _side_menu_width,
               child: ListView(
                 children: <Widget>[
-                  settings_button,
+                  account_button,
+                  security_button,
+                  about_us,
                   contact_us_button,
                   SizedBox(
-                    height: 540,
+                    height: 435,
                   ),
                   sign_out_button,
                 ],
@@ -399,11 +480,40 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               FocusScope.of(context).requestFocus(new FocusNode());
             },
             child: Scaffold(
+                backgroundColor: Colors.white,
                 floatingActionButton: report_bug,
                 extendBodyBehindAppBar: true,
                 appBar: AppBar(
+                  toolbarHeight: 45,
                   backgroundColor: Colors.deepOrangeAccent,
                   leading: menu_button,
+                  actions: [
+                    Row(children: [
+                      Text(
+                        display_name,
+                        style: TextStyle(fontSize: 15, color: Colors.white),
+                      ),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                        display_second_name,
+                        style: TextStyle(fontSize: 15, color: Colors.white),
+                      ),
+                    ]),
+                    SizedBox(
+                      width: 6,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        print('im working');
+                      },
+                      child: Icon(Icons.settings_suggest),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    )
+                  ],
                 ),
                 body: Stack(
                   children: <Widget>[

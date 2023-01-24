@@ -1,3 +1,4 @@
+import 'package:aft_arabia/services/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 //custom usr class for acessing uid
@@ -8,12 +9,12 @@ class User {
 }
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth auth = FirebaseAuth.instance;
 
   //auth change user stream
 
   Stream<User?> get user {
-    return _auth.authStateChanges().map(_get_user_id);
+    return auth.authStateChanges().map(_get_user_id);
   }
 
   //create user obj with uid only
@@ -26,18 +27,24 @@ class AuthService {
   Future signIn(String email, String pwd) async {
     try {
       var result =
-          await _auth.signInWithEmailAndPassword(email: email, password: pwd);
+          await auth.signInWithEmailAndPassword(email: email, password: pwd);
       var user = result.user;
       return user;
     } catch (e) {
-      print(e.toString());
-      if (e.toString() == '[firebase_auth/user-not-found] There is no user record corresponding to this identifier. The user may have been deleted.' ||
-          e.toString() ==
-              '[firebase_auth/wrong-password] The password is invalid or the user does not have a password.' ||
-          e.toString() ==
-              '[firebase_auth/invalid-email] The email address is badly formatted.') {
+      print(e);
+      String error = e.toString();
+      print([
+        '[firebaseauth/user-not-found] There is no user record corresponding to this identifier. The user may have been deleted.',
+        '[firebaseauth/wrong-password] The password is invalid or the user does not have a password.',
+        '[firebaseauth/invalid-email] The email address is badly formatted.'
+      ].contains(error));
+      if (error.contains('formatted') ||
+          error.contains('deleted') ||
+          error.contains('invalid')) {
+        print('1');
         return 1;
       } else {
+        print('a');
         return null;
       }
     }
@@ -45,7 +52,7 @@ class AuthService {
 
   Future resetPassword(String email) async {
     try {
-      await _auth.sendPasswordResetEmail(email: email);
+      await auth.sendPasswordResetEmail(email: email);
       return 1;
     } catch (e) {
       print(e.toString());
@@ -57,7 +64,7 @@ class AuthService {
 
   Future signOut() async {
     try {
-      return await _auth.signOut();
+      return await auth.signOut();
     } catch (e) {
       print(e.toString());
     }
@@ -67,9 +74,11 @@ class AuthService {
   Future SignUp(String name, String second_name, String number, String email,
       String pwd) async {
     try {
-      var result = await _auth.createUserWithEmailAndPassword(
+      var result = await auth.createUserWithEmailAndPassword(
           email: email, password: pwd);
       var user = result.user;
+      await DatabaseService(uid: user?.uid)
+          .update_user_data(name, second_name, number, email);
       return _get_user_id(user);
     } catch (e) {
       print(e.toString());

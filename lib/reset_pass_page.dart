@@ -22,7 +22,7 @@ class _ResetPassPageState extends State<ResetPassPage> {
     );
 
     final details = Text(
-      '- Provide your E-mail address in the field below.\n- Wait for the Confirmation E-mail to arrive in your inbox.\n- Click the link and follow the steps to reset you email.',
+      '- Provide your E-mail address in the field below.\n- Wait for the Confirmation E-mail to arrive in your inbox.\n- Click the link and follow the steps to reset you password.',
       style: TextStyle(fontSize: 12, color: Colors.blueGrey),
     );
 

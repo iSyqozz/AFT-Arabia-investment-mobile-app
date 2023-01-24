@@ -46,6 +46,12 @@ class _ContactPageState extends State<ContactPage> {
       ),
     );
 
+    final title = Text(
+      'Contact Us',
+      textAlign: TextAlign.center,
+      style: TextStyle(fontSize: 40),
+    );
+
     final email_label = Text(
       '    E-mail:',
       style: TextStyle(color: Colors.black54),
@@ -117,14 +123,6 @@ class _ContactPageState extends State<ContactPage> {
           }),
     );
 
-    final succes_prompt = SnackBar(
-      content: Text(
-        snackbar_content,
-        textAlign: TextAlign.center,
-      ),
-      backgroundColor: snackbar_col,
-    );
-
     final submit_button = Padding(
       padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 80),
       child: ElevatedButton(
@@ -137,27 +135,56 @@ class _ContactPageState extends State<ContactPage> {
           child: Text('Submit', style: TextStyle(color: Colors.white)),
           onPressed: () async {
             if (_formkey.currentState!.validate()) {
-              final response =
-                  await http.post(Uri.parse('http://192.168.1.43:5000/email'),
-                      body: json.encode({
-                        'subject': _subject_controller.text,
-                        'email': _email_controller.text,
-                        'body': _body_controller.text,
-                      }));
-              print(response.statusCode);
-              if (response.statusCode == 200) {
-                setState(() {
-                  snackbar_content = 'Form Submitted Succesfully!';
-                  snackbar_col = Colors.teal;
-                });
-                ScaffoldMessenger.of(context).showSnackBar(succes_prompt);
-              } else {
-                print('failed with $response.statuscode');
-                setState(() {
-                  snackbar_content = 'Form Submission Failed';
-                  snackbar_col = Colors.red;
-                });
-                ScaffoldMessenger.of(context).showSnackBar(succes_prompt);
+              try {
+                final response =
+                    await http.post(Uri.parse('http://192.168.1.43:5000/email'),
+                        body: json.encode({
+                          'subject': _subject_controller.text,
+                          'email': _email_controller.text,
+                          'body': _body_controller.text,
+                        }));
+                print(response.statusCode);
+                if (response.statusCode == 200) {
+                  int tri_flag = 1;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        tri_flag == 1
+                            ? 'Form Submitted Succesfully!'
+                            : 'Form Submission Failed',
+                        textAlign: TextAlign.center,
+                      ),
+                      backgroundColor: tri_flag == 1 ? Colors.teal : Colors.red,
+                    ),
+                  );
+                } else {
+                  int tri_flag = 2;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        tri_flag == 1
+                            ? 'Form Submitted Succesfully!'
+                            : 'Form Submission Failed',
+                        textAlign: TextAlign.center,
+                      ),
+                      backgroundColor: tri_flag == 1 ? Colors.teal : Colors.red,
+                    ),
+                  );
+                }
+                int tri_flag = 2;
+              } catch (e) {
+                int tri_flag = 2;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      tri_flag == 1
+                          ? 'Form Submitted Succesfully!'
+                          : 'Form Submission Failed',
+                      textAlign: TextAlign.center,
+                    ),
+                    backgroundColor: tri_flag == 1 ? Colors.teal : Colors.red,
+                  ),
+                );
               }
             }
           }),
@@ -177,6 +204,10 @@ class _ContactPageState extends State<ContactPage> {
                 padding: EdgeInsets.only(left: 24.0, right: 24.0),
                 children: [
                   SizedBox(height: 80.0),
+                  title,
+                  SizedBox(
+                    height: 50,
+                  ),
                   subject_label,
                   subject,
                   SizedBox(height: 20.0),
@@ -186,7 +217,7 @@ class _ContactPageState extends State<ContactPage> {
                   body_label,
                   SizedBox(height: 5.0),
                   body,
-                  SizedBox(height: 40.0),
+                  SizedBox(height: 30.0),
                   submit_button,
                   return_button,
                 ],

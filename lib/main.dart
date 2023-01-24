@@ -4,9 +4,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
 import 'register_page.dart';
-import 'contact_page.dart';
 import 'package:aft_arabia/wrapper.dart';
 import 'package:aft_arabia/services/auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'services/database.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,9 +27,13 @@ class MyApp extends StatelessWidget {
   //main build method for the application
   @override
   Widget build(BuildContext context) {
-    return StreamProvider<User?>.value(
-      initialData: null,
-      value: AuthService().user,
+    return MultiProvider(
+      providers: [
+        StreamProvider<User?>(
+          create: (context) => AuthService().user,
+          initialData: null,
+        )
+      ],
       child: MaterialApp(
         scaffoldMessengerKey: _scaffold_key,
         debugShowCheckedModeBanner: false,

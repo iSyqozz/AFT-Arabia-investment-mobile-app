@@ -70,6 +70,7 @@ class _VerifyPageState extends State<VerifyPage> {
               style: TextStyle(color: Colors.white, fontSize: 13)),
           onPressed: () async {
             await auth_inter.signOut();
+            timer.cancel();
             Navigator.pop(context);
           }),
     );
@@ -103,24 +104,25 @@ class _VerifyPageState extends State<VerifyPage> {
         FocusScope.of(context).requestFocus(new FocusNode());
       },
       child: Scaffold(
+          backgroundColor: Colors.white,
           body: ListView(
-        shrinkWrap: false,
-        children: [
-          SizedBox(
-            height: 200,
-          ),
-          title,
-          SizedBox(
-            height: 20,
-          ),
-          details,
-          SizedBox(
-            height: 30,
-          ),
-          resend_email_button,
-          sign_out_button
-        ],
-      )),
+            shrinkWrap: false,
+            children: [
+              SizedBox(
+                height: 200,
+              ),
+              title,
+              SizedBox(
+                height: 20,
+              ),
+              details,
+              SizedBox(
+                height: 30,
+              ),
+              resend_email_button,
+              sign_out_button
+            ],
+          )),
     );
   }
 }
