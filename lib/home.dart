@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:async';
-import 'dart:io';
 import 'security-page.dart';
 import 'package:aft_arabia/services/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'contact_page.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'services/database.dart';
+import 'utils/transition.dart';
+import 'profile_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,56 +27,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final _formkey = GlobalKey<FormState>();
   String snackbar_content = 'Bug Form Submitted Succesfully!';
   MaterialColor snackbar_col = Colors.teal;
-  bool _is_transition = true;
 
   String display_name = '---';
   String display_second_name = '---';
   String? curr_user_id = '---';
+  String number = '---';
 
-  final Transition = Container(
-      child: SpinKitCubeGrid(
-    color: Colors.deepOrangeAccent,
-  ));
-
-  Timer scheduleTimeout([int milliseconds = 2000, String name = 'sign in']) =>
-      Timer(Duration(milliseconds: milliseconds), () {
-        setState(() {
-          if (name == 'Transition Contact') {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => ContactPage()));
-          } else if (name == 'Transition Security') {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => SecurityPage()));
-          }
-        });
-
-        sleep(Duration(milliseconds: 20));
-
-        setState(() {
-          _is_transition = false;
-        });
-      });
-
-  late final AnimationController icon_controller = AnimationController(
-    duration: const Duration(milliseconds: 500),
-    vsync: this,
-  );
-
-  void dispose() {
-    super.dispose();
-    icon_controller.dispose();
+  void remove(AnimationController e) {
+    e.dispose();
   }
 
-  void show_menu() {
+  void show_menu(e) {
     setState(() {
       if (_side_menu_buttons_visible) {
         _side_menu_buttons_visible = false;
       }
       if (_side_menu_width == 130) {
-        icon_controller.reverse();
+        e.reverse();
         _side_menu_width = 0;
       } else {
-        icon_controller.forward();
+        e.forward();
         _side_menu_width = 130;
       }
       _visible = !_visible;
@@ -89,23 +59,30 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     temp.get().then((value) {
       final temp = value.data() as Map<String, dynamic>;
       setState(() {
-        display_name = temp['name'];
-        display_second_name = temp['second name'];
-        curr_user_id = uid;
+        try {
+          display_name = temp['name'];
+          display_second_name = temp['second name'];
+          number = temp['number'];
+          curr_user_id = uid;
+        } catch (e) {
+          print(e.toString());
+        }
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    late final AnimationController icon_controller = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
     final user = Provider.of<User?>(context);
+    print(user);
 
     if (user != null && user.uid != curr_user_id) {
       set_display_name(user.uid);
-    }
-
-    if (_is_transition) {
-      scheduleTimeout(2000);
     }
 
     final succes_prompt = SnackBar(
@@ -278,7 +255,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     ));
 
     //sign out button
-    final Widget sign_out_button = Visibility(
+    final sign_out_button = Visibility(
       visible: _side_menu_buttons_visible,
       child: AnimatedOpacity(
         opacity: _visible ? 1.0 : 0.0,
@@ -296,7 +273,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: Text('Sign Out',
                     style: TextStyle(color: Colors.white, fontSize: 13)),
                 onPressed: () async {
-                  dispose();
+                  await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => Transition()));
+                  remove(icon_controller);
                   await _auth.signOut();
                 }),
           ),
@@ -322,7 +301,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     backgroundColor: Colors.deepOrange),
                 child: Text('Account',
                     style: TextStyle(color: Colors.white, fontSize: 13)),
-                onPressed: () {}),
+                onPressed: () async {
+                  await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => Transition()));
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (BuildContext context,
+                          Animation<double> animation1,
+                          Animation<double> animation2) {
+                        return ProfilePage(
+                          number: number,
+                          name1: display_name,
+                          name2: display_second_name,
+                        );
+                      },
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                    ),
+                  );
+                }),
           ),
         ),
       ),
@@ -345,11 +343,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     backgroundColor: Colors.deepOrange),
                 child: Text('Security',
                     style: TextStyle(color: Colors.white, fontSize: 13)),
-                onPressed: () {
-                  setState(() {
-                    _is_transition = true;
-                  });
-                  scheduleTimeout(2000, 'Transition Security');
+                onPressed: () async {
+                  await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => Transition()));
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (BuildContext context,
+                          Animation<double> animation1,
+                          Animation<double> animation2) {
+                        return SecurityPage();
+                      },
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                    ),
+                  );
                 }),
           ),
         ),
@@ -396,11 +404,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     backgroundColor: Colors.deepOrange),
                 child: Text('Contact Us',
                     style: TextStyle(color: Colors.white, fontSize: 12)),
-                onPressed: () {
-                  setState(() {
-                    _is_transition = true;
-                  });
-                  scheduleTimeout(2000, 'Transition Contact');
+                onPressed: () async {
+                  await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => Transition()));
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (BuildContext context,
+                          Animation<double> animation1,
+                          Animation<double> animation2) {
+                        return ContactPage();
+                      },
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                    ),
+                  );
                 }),
           ),
         ),
@@ -409,7 +427,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     final menu_button = GestureDetector(
         onTap: () {
-          show_menu();
+          show_menu(icon_controller);
         },
         child: Padding(
           padding: const EdgeInsets.fromLTRB(10, 7, 0, 0),
@@ -435,7 +453,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: GestureDetector(
             onPanUpdate: (details) {
               if (details.delta.dx < 0 && _visible) {
-                show_menu();
+                show_menu(icon_controller);
               }
             },
             child: AnimatedContainer(
@@ -473,55 +491,59 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
     );
 
-    return _is_transition
-        ? Transition
-        : GestureDetector(
-            onTap: () {
-              FocusScope.of(context).requestFocus(new FocusNode());
-            },
-            child: Scaffold(
-                backgroundColor: Colors.white,
-                floatingActionButton: report_bug,
-                extendBodyBehindAppBar: true,
-                appBar: AppBar(
-                  toolbarHeight: 45,
-                  backgroundColor: Colors.deepOrangeAccent,
-                  leading: menu_button,
-                  actions: [
-                    Row(children: [
-                      Text(
-                        display_name,
-                        style: TextStyle(fontSize: 15, color: Colors.white),
-                      ),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Text(
-                        display_second_name,
-                        style: TextStyle(fontSize: 15, color: Colors.white),
-                      ),
-                    ]),
-                    SizedBox(
-                      width: 6,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        print('im working');
-                      },
-                      child: Icon(Icons.settings_suggest),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    )
-                  ],
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(new FocusNode());
+      },
+      child: Scaffold(
+          backgroundColor: Colors.white,
+          floatingActionButton: report_bug,
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            toolbarHeight: 45,
+            backgroundColor: Colors.deepOrangeAccent,
+            leading: menu_button,
+            actions: [
+              Row(children: [
+                Text(
+                  display_name,
+                  style: TextStyle(fontSize: 15, color: Colors.white),
                 ),
-                body: Stack(
-                  children: <Widget>[
-                    background_logo,
-                    side_menu,
-                    report_bug,
-                  ],
-                )),
-          );
+                SizedBox(
+                  width: 5,
+                ),
+                Text(
+                  display_second_name,
+                  style: TextStyle(fontSize: 15, color: Colors.white),
+                ),
+              ]),
+              SizedBox(
+                width: 6,
+              ),
+              GestureDetector(
+                onTap: () {
+                  print('im working');
+                },
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundImage: Image.asset(
+                    'lib/images/pfp-placeholder.jpg',
+                    fit: BoxFit.contain,
+                  ).image,
+                ),
+              ),
+              SizedBox(
+                width: 5,
+              )
+            ],
+          ),
+          body: Stack(
+            children: <Widget>[
+              background_logo,
+              side_menu,
+              report_bug,
+            ],
+          )),
+    );
   }
 }

@@ -22,16 +22,34 @@ class AuthService {
     return user != null ? User(uid: user.uid) : null;
   }
 
-  // sign in method for email and password
+  //ChangeEmail
+  Future changeEmail(String email, String pass, String new_email) async {
+    try {
+      final res1 = await auth.currentUser!.reauthenticateWithCredential(
+          EmailAuthProvider.credential(email: email, password: pass));
+    } catch (e) {
+      print(e.toString());
+      return 1;
+    }
+    try {
+      final user = auth.currentUser;
+      final res = await user!.verifyBeforeUpdateEmail(new_email);
+      return true;
+    } catch (e) {
+      print(e.toString());
+      return 2;
+    }
+  }
 
+  // sign in method for email and password
   Future signIn(String email, String pwd) async {
     try {
       var result =
           await auth.signInWithEmailAndPassword(email: email, password: pwd);
       var user = result.user;
+      print(result);
       return user;
     } catch (e) {
-      print(e);
       String error = e.toString();
       print([
         '[firebaseauth/user-not-found] There is no user record corresponding to this identifier. The user may have been deleted.',
@@ -41,10 +59,8 @@ class AuthService {
       if (error.contains('formatted') ||
           error.contains('deleted') ||
           error.contains('invalid')) {
-        print('1');
         return 1;
       } else {
-        print('a');
         return null;
       }
     }

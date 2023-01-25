@@ -1,9 +1,7 @@
 TODO:
 complete Email Change Backend
 adjust transition and make it into a nav push/pop everywhere
-add password hide/reveal functionality and UI
 Hide/show homepage appbar on side menu hide/show
-add password change page and backend
 Add Account Settings Page and backend
 
 

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:aft_arabia/services/auth.dart';
 import 'register_page.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'dart:async';
-import 'dart:io';
 import 'reset_pass_page.dart';
 import 'verify.dart';
+import 'utils/transition.dart';
 
 class LoginPage extends StatefulWidget {
   static String tag = 'login-page';
@@ -21,31 +20,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   bool _is_visible = false;
   bool _is_error_vis = false;
   String error = '';
-  bool _is_transition = false;
+  IconData pass_ind = Icons.remove_red_eye_outlined;
+  bool is_hidden = true;
 
-  final Transition = Container(
-      child: SpinKitCubeGrid(
-    color: Colors.deepOrangeAccent,
-  ));
-
-  Timer scheduleTimeout([int milliseconds = 2000, String name = 'sign in']) =>
-      Timer(Duration(milliseconds: milliseconds), () {
-        setState(() {
-          if (name == 'Transition Register') {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => RegisterPage()));
-          } else if (name == 'Transition reset') {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => ResetPassPage()));
-          }
-        });
-
-        sleep(Duration(milliseconds: 20));
-
-        setState(() {
-          _is_transition = false;
-        });
-      });
+  void remove(AnimationController e) {
+    e.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +91,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       },
       controller: login_password_controller,
       autofocus: false,
-      obscureText: true,
+      obscureText: is_hidden,
       decoration: InputDecoration(
         hintText: 'Password',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -199,7 +179,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               });
               _controller.repeat();
               await Future.delayed(Duration(seconds: 1));
-
               dynamic res = await _login_checker.signIn(
                   login_email_controller.text, login_password_controller.text);
               if (res == null) {
@@ -223,7 +202,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   _is_error_vis = false;
                   _is_visible = false;
                 });
-                dispose();
+                remove(_controller);
               }
             }
           }),
@@ -240,11 +219,21 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 padding: EdgeInsets.all(12),
                 backgroundColor: Colors.deepOrangeAccent),
             child: Text('Register', style: TextStyle(color: Colors.white)),
-            onPressed: () {
-              setState(() {
-                _is_transition = true;
-              });
-              scheduleTimeout(2000, 'Transition Register');
+            onPressed: () async {
+              await Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => Transition()));
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (BuildContext context,
+                      Animation<double> animation1,
+                      Animation<double> animation2) {
+                    return RegisterPage();
+                  },
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              );
             }));
 
     //email prompt
@@ -280,11 +269,21 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           ),
         ),
         GestureDetector(
-          onTap: () {
-            setState(() {
-              _is_transition = true;
-            });
-            scheduleTimeout(2000, 'Transition reset');
+          onTap: () async {
+            await Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => Transition()));
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (BuildContext context,
+                    Animation<double> animation1,
+                    Animation<double> animation2) {
+                  return ResetPassPage();
+                },
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero,
+              ),
+            );
           },
           child: Text(
             '  Tap Here',
@@ -296,42 +295,77 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
 
     // creating main scaffold container, putting everything together, and returning the the page
-    return _is_transition
-        ? Transition
-        : GestureDetector(
-            onTap: () {
-              FocusScope.of(context).requestFocus(new FocusNode());
-            },
-            child: Scaffold(
-              backgroundColor: Colors.white,
-              body: Form(
-                key: _formkey,
-                child: Center(
-                  child: ListView(
-                    shrinkWrap: false,
-                    padding: EdgeInsets.only(left: 24.0, right: 24.0),
-                    children: <Widget>[
-                      logo,
-                      email_label,
-                      SizedBox(height: 4.0),
-                      email,
-                      SizedBox(height: 8.0),
-                      password_label,
-                      SizedBox(height: 4.0),
-                      password,
-                      SizedBox(height: 24.0),
-                      loginButton,
-                      registerButton,
-                      SizedBox(height: 20.0),
-                      error_prompt,
-                      SizedBox(height: 20.0),
-                      Loading_ind,
-                      SizedBox(height: 50.0),
-                      reset_pwd_button
-                    ],
-                  ),
-                ),
+    return GestureDetector(
+        onTap: () {
+          FocusScope.of(context).requestFocus(new FocusNode());
+        },
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: Form(
+            key: _formkey,
+            child: Center(
+              child: ListView(
+                shrinkWrap: false,
+                padding: EdgeInsets.only(left: 24.0, right: 24.0),
+                children: <Widget>[
+                  logo,
+                  email_label,
+                  SizedBox(height: 4.0),
+                  email,
+                  SizedBox(height: 8.0),
+                  password_label,
+                  SizedBox(height: 4.0),
+                  password,
+                  Row(children: [
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          if (pass_ind == Icons.remove_red_eye_outlined) {
+                            pass_ind = Icons.remove_red_eye_sharp;
+                          } else {
+                            pass_ind = Icons.remove_red_eye_outlined;
+                          }
+                          is_hidden = !is_hidden;
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                        child: Icon(pass_ind),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(215, 0, 0, 0),
+                      child: Text(
+                        'Clear all',
+                        style: TextStyle(color: Colors.blueGrey),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          login_email_controller.text = '';
+                          login_password_controller.text = '';
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+                        child: Icon(Icons.delete_forever_sharp),
+                      ),
+                    )
+                  ]),
+                  SizedBox(height: 10.0),
+                  loginButton,
+                  registerButton,
+                  SizedBox(height: 20.0),
+                  error_prompt,
+                  SizedBox(height: 20.0),
+                  Loading_ind,
+                  SizedBox(height: 40.0),
+                  reset_pwd_button
+                ],
               ),
-            ));
+            ),
+          ),
+        ));
   }
 }

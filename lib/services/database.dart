@@ -8,7 +8,9 @@ class DatabaseService {
       FirebaseFirestore.instance.collection('User Data');
 
   DocumentReference fetch_data(String? uid) {
-    return user_collection.doc(uid);
+    var temp = user_collection.doc(uid);
+    print(temp);
+    return temp;
   }
 
   Future update_user_data(
@@ -22,7 +24,6 @@ class DatabaseService {
         'name': name,
         'second name': second_name,
         'number': number,
-        'email': email,
       });
     } catch (e) {
       print(e.toString());

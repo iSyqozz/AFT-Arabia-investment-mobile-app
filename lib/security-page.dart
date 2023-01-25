@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'change-email.dart';
+import 'utils/transition.dart';
+import 'reset_pass_page.dart';
 
 class SecurityPage extends StatefulWidget {
   const SecurityPage({super.key});
@@ -31,9 +33,20 @@ class _SecurityPageState extends State<SecurityPage> {
     }
 
     final email_option = GestureDetector(
-      onTap: () {
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => ChangeEmail()));
+      onTap: () async {
+        await Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => Transition()));
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (BuildContext context, Animation<double> animation1,
+                Animation<double> animation2) {
+              return ChangeEmail();
+            },
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
       },
       child: AnimatedOpacity(
         opacity: _visible ? 1.0 : 0.0,
@@ -67,36 +80,54 @@ class _SecurityPageState extends State<SecurityPage> {
       ),
     );
 
-    final pass_option = AnimatedOpacity(
-      opacity: _visible ? 1.0 : 0.0,
-      duration: Duration(milliseconds: 700),
-      child: AnimatedAlign(
-        curve: Curves.fastOutSlowIn,
-        alignment: _animated ? Alignment.center : Alignment.centerRight,
+    final pass_option = GestureDetector(
+      onTap: () async {
+        await Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => Transition()));
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (BuildContext context, Animation<double> animation1,
+                Animation<double> animation2) {
+              return ResetPassPage();
+            },
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+      },
+      child: AnimatedOpacity(
+        opacity: _visible ? 1.0 : 0.0,
         duration: Duration(milliseconds: 700),
-        child: Container(
-          width: 320,
-          padding: EdgeInsets.all(20),
-          decoration: BoxDecoration(
-              border: Border.all(
-                  color: Colors.deepOrangeAccent, style: BorderStyle.solid),
-              borderRadius: BorderRadius.circular(40),
-              color: Colors.white),
-          child: Row(
-            children: [
-              Icon(Icons.key_outlined),
-              SizedBox(
-                width: 20,
-              ),
-              Text(
-                'Change Password',
-                style: TextStyle(fontSize: 20),
-              )
-            ],
+        child: AnimatedAlign(
+          curve: Curves.fastOutSlowIn,
+          alignment: _animated ? Alignment.center : Alignment.centerRight,
+          duration: Duration(milliseconds: 700),
+          child: Container(
+            width: 320,
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+                border: Border.all(
+                    color: Colors.deepOrangeAccent, style: BorderStyle.solid),
+                borderRadius: BorderRadius.circular(40),
+                color: Colors.white),
+            child: Row(
+              children: [
+                Icon(Icons.key_outlined),
+                SizedBox(
+                  width: 20,
+                ),
+                Text(
+                  'Change Password',
+                  style: TextStyle(fontSize: 20),
+                )
+              ],
+            ),
           ),
         ),
       ),
     );
+
     final dismiss_button = Padding(
         padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 17),
         child: ElevatedButton(

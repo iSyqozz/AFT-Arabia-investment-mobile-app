@@ -1,9 +1,11 @@
 import 'dart:ffi';
-
+import 'package:aft_arabia/services/database.dart';
 import 'package:flutter/material.dart';
-import 'package:aft_arabia/services/auth.dart';
-import 'services/database.dart';
+import 'package:provider/provider.dart';
+export 'services/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+export 'services/database.dart';
+import 'services/auth.dart' show AuthService;
 
 class ChangeEmail extends StatefulWidget {
   const ChangeEmail({super.key});
@@ -19,9 +21,14 @@ class _ChangeEmailState extends State<ChangeEmail> {
   final verify_new_email_controller = TextEditingController();
   final pass_controller = TextEditingController();
   final _formkey = GlobalKey<FormState>();
+  bool _visible = false;
+  bool _hidden = true;
+  IconData pass_ind = Icons.remove_red_eye_outlined;
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<User?>(context);
+
     final title = Text(
       'Change Email',
       textAlign: TextAlign.center,
@@ -30,6 +37,10 @@ class _ChangeEmailState extends State<ChangeEmail> {
 
     final email_label = Text(
       '    Your Account E-mail:',
+      style: TextStyle(color: Colors.black54),
+    );
+    final pass_lable = Text(
+      '    Password:',
       style: TextStyle(color: Colors.black54),
     );
     final new_email_label = Text(
@@ -62,6 +73,36 @@ class _ChangeEmailState extends State<ChangeEmail> {
       controller: email_controller,
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
+      decoration: InputDecoration(
+        hintText: '',
+        contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+      ),
+    );
+
+    final pass = TextFormField(
+      validator: (val) {
+        if (val == '') {
+          return 'This Field Cannot Be Empty';
+        } else if (val!.length > 100) {
+          return "This Field Can't Have more than 100 characters";
+        } else if (val.length < 8) {
+          return "Password Can't Have less than 8 Characters";
+        } else if ((!RegExp('(?=.*[A-Z])').hasMatch(val))) {
+          return "Password Must Have One Uppercase Letter";
+        } else if ((!RegExp('(?=.*[0-9])').hasMatch(val))) {
+          return "Password Must Have One Digit";
+        } else if ((RegExp('(?=.*[\(\)-+_!@#\$%^&*.,? \n/\"\'\:\;])')
+            .hasMatch(val))) {
+          return "Password Can't Contain Special Characters";
+        } else {
+          return null;
+        }
+      },
+      controller: pass_controller,
+      keyboardType: TextInputType.name,
+      autofocus: false,
+      obscureText: _hidden,
       decoration: InputDecoration(
         hintText: '',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -133,8 +174,51 @@ class _ChangeEmailState extends State<ChangeEmail> {
               backgroundColor: Colors.deepOrangeAccent),
           child:
               Text('Verify & Proceed', style: TextStyle(color: Colors.white)),
-          onPressed: () {
-            _formkey.currentState?.validate();
+          onPressed: () async {
+            if (_formkey.currentState!.validate()) {
+              final res = await _email_changer.changeEmail(
+                  email_controller.text.trim(),
+                  pass_controller.text,
+                  new_email_controller.text);
+              if (res == true) {
+                print('succeeded');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Verification Email Sent!',
+                      textAlign: TextAlign.center,
+                    ),
+                    backgroundColor: Colors.teal,
+                  ),
+                );
+                setState(() {
+                  _visible = true;
+                });
+              } else if (res == 1) {
+                print('failed');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Authentication Error: Check E-mail and password',
+                      textAlign: TextAlign.center,
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              } else {
+                print(res);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Unknown Error',
+                      textAlign: TextAlign.center,
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+            ;
           }),
     );
 
@@ -151,6 +235,15 @@ class _ChangeEmailState extends State<ChangeEmail> {
           onPressed: () {
             Navigator.pop(context);
           }),
+    );
+
+    final hint_text = Visibility(
+      visible: _visible,
+      child: Text(
+        'A verification E-mail has been sent to the new address that you have provided.',
+        textAlign: TextAlign.center,
+        style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+      ),
     );
 
     return GestureDetector(
@@ -184,10 +277,58 @@ class _ChangeEmailState extends State<ChangeEmail> {
                 confirm_new_email_label,
                 new_confirm_email,
                 SizedBox(
+                  height: 20,
+                ),
+                pass_lable,
+                pass,
+                Row(children: [
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (pass_ind == Icons.remove_red_eye_outlined) {
+                          pass_ind = Icons.remove_red_eye_sharp;
+                        } else {
+                          pass_ind = Icons.remove_red_eye_outlined;
+                        }
+                        _hidden = !_hidden;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                      child: Icon(pass_ind),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(215, 0, 0, 0),
+                    child: Text(
+                      'Clear all',
+                      style: TextStyle(color: Colors.blueGrey),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        email_controller.text = '';
+                        new_email_controller.text = '';
+                        verify_new_email_controller.text = '';
+                        pass_controller.text = '';
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+                      child: Icon(Icons.delete_forever_sharp),
+                    ),
+                  )
+                ]),
+                SizedBox(
                   height: 60,
                 ),
                 submit,
                 return_button,
+                SizedBox(
+                  height: 30,
+                ),
+                hint_text
               ],
             ),
           ),

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:aft_arabia/services/auth.dart';
 import 'services/auth.dart';
+import 'utils/transition.dart';
 
 class VerifyPage extends StatefulWidget {
   const VerifyPage({super.key});
@@ -70,17 +71,11 @@ class _VerifyPageState extends State<VerifyPage> {
               style: TextStyle(color: Colors.white, fontSize: 13)),
           onPressed: () async {
             await auth_inter.signOut();
+            await Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => Transition()));
             timer.cancel();
             Navigator.pop(context);
           }),
-    );
-
-    final succes_prompt = SnackBar(
-      content: Text(
-        'Email sent!',
-        textAlign: TextAlign.center,
-      ),
-      backgroundColor: Colors.teal,
     );
 
     final resend_email_button = Padding(
@@ -94,8 +89,26 @@ class _VerifyPageState extends State<VerifyPage> {
           child: Text('Resend Email',
               style: TextStyle(color: Colors.white, fontSize: 13)),
           onPressed: () async {
-            curr_user?.sendEmailVerification();
-            ScaffoldMessenger.of(context).showSnackBar(succes_prompt);
+            try {
+              var res = await curr_user?.sendEmailVerification();
+              print('res');
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(
+                  'Email sent!',
+                  textAlign: TextAlign.center,
+                ),
+                backgroundColor: Colors.teal,
+              ));
+            } catch (e) {
+              print(e.toString());
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(
+                  'Failed to send Emai, Try again later. ',
+                  textAlign: TextAlign.center,
+                ),
+                backgroundColor: Colors.red,
+              ));
+            }
           }),
     );
 

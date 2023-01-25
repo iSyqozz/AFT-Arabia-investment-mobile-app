@@ -27,6 +27,9 @@ class _RegisterPageState extends State<RegisterPage>
   bool _is_visible = false;
   bool _is_error_vis = false;
 
+  IconData pass_ind = Icons.remove_red_eye_outlined;
+  bool is_hidden = true;
+
   @override
   void dispose() {
     _controller.dispose();
@@ -46,7 +49,6 @@ class _RegisterPageState extends State<RegisterPage>
 
   @override
   Widget build(BuildContext context) {
-    //name lable and field
     final in_use_prompt = Visibility(
       visible: _is_error_vis,
       child: Center(
@@ -58,6 +60,7 @@ class _RegisterPageState extends State<RegisterPage>
     );
 
     final name_label = Text(
+      //name lable and field
       '    First Name:',
       style: TextStyle(color: Colors.black54),
     );
@@ -191,7 +194,7 @@ class _RegisterPageState extends State<RegisterPage>
       },
       controller: password_controller,
       autofocus: false,
-      obscureText: true,
+      obscureText: is_hidden,
       decoration: InputDecoration(
         hintText: 'Password',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -217,7 +220,7 @@ class _RegisterPageState extends State<RegisterPage>
       },
       controller: confirm_password_controller,
       autofocus: false,
-      obscureText: true,
+      obscureText: is_hidden,
       decoration: InputDecoration(
         hintText: 'password',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -386,6 +389,47 @@ class _RegisterPageState extends State<RegisterPage>
                     SizedBox(height: 15.0),
                     confirm_password_lable,
                     confirm_password,
+                    Row(children: [
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (pass_ind == Icons.remove_red_eye_outlined) {
+                              pass_ind = Icons.remove_red_eye_sharp;
+                            } else {
+                              pass_ind = Icons.remove_red_eye_outlined;
+                            }
+                            is_hidden = !is_hidden;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                          child: Icon(pass_ind),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(215, 0, 0, 0),
+                        child: Text(
+                          'Clear all',
+                          style: TextStyle(color: Colors.blueGrey),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            first_name_controller.text = '';
+                            second_name_controller.text = '';
+                            number_controller.text = '';
+                            email_controller.text = '';
+                            password_controller.text = '';
+                            confirm_password_controller.text = '';
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+                          child: Icon(Icons.delete_forever_sharp),
+                        ),
+                      )
+                    ]),
                     SizedBox(height: 20.0),
                     registerButton,
                     return_button,
