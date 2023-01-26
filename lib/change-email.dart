@@ -24,6 +24,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
   bool _visible = false;
   bool _hidden = true;
   IconData pass_ind = Icons.remove_red_eye_outlined;
+  bool is_email_changed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -175,6 +176,9 @@ class _ChangeEmailState extends State<ChangeEmail> {
           child:
               Text('Verify & Proceed', style: TextStyle(color: Colors.white)),
           onPressed: () async {
+            setState(() {
+              _visible = false;
+            });
             if (_formkey.currentState!.validate()) {
               final res = await _email_changer.changeEmail(
                   email_controller.text.trim(),
@@ -192,14 +196,26 @@ class _ChangeEmailState extends State<ChangeEmail> {
                   ),
                 );
                 setState(() {
+                  is_email_changed = true;
                   _visible = true;
                 });
+                await _email_changer.signOut();
               } else if (res == 1) {
                 print('failed');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
                       'Authentication Error: Check E-mail and password',
+                      textAlign: TextAlign.center,
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              } else if (res == 3) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'New E-mail Already in use!!',
                       textAlign: TextAlign.center,
                     ),
                     backgroundColor: Colors.red,
@@ -233,14 +249,21 @@ class _ChangeEmailState extends State<ChangeEmail> {
               backgroundColor: Colors.deepOrangeAccent),
           child: Text('Return', style: TextStyle(color: Colors.white)),
           onPressed: () {
-            Navigator.pop(context);
+            if (is_email_changed) {
+              int count = 0;
+              Navigator.popUntil(context, (route) {
+                return count++ == 2;
+              });
+            } else {
+              Navigator.pop(context);
+            }
           }),
     );
 
     final hint_text = Visibility(
       visible: _visible,
       child: Text(
-        'A verification E-mail has been sent to the new address that you have provided.',
+        'A verification E-mail has been sent to the new address that you have provided.\n\nYou will be automatically signed out for re-authentication.',
         textAlign: TextAlign.center,
         style: TextStyle(color: Colors.blueGrey, fontSize: 12),
       ),

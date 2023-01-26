@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'services/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class ProfilePage extends StatefulWidget {
   String name1;
@@ -24,6 +25,10 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  DateTime creationtime_date =
+      FirebaseAuth.instance.currentUser?.metadata.creationTime as DateTime;
+  final DateFormat formatter = DateFormat('yyyy-MM-dd');
+
   final auth = FirebaseAuth.instance.currentUser;
   bool is_built = false;
   double cover_hight = 0;
@@ -36,10 +41,12 @@ class _ProfilePageState extends State<ProfilePage> {
   bool pic_visible = false;
   var pic_align = Alignment.topCenter;
   double arrow_x = 60;
-  double name_x = 100;
+  double name_x = 70;
 
   double _info_border_hight = 80;
   bool fields_left_visible = false;
+
+  //page initial animations
   @override
   void initState() {
     // TODO: implement initState
@@ -90,7 +97,9 @@ class _ProfilePageState extends State<ProfilePage> {
         child: (Text(
           widget.name1,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 20, color: Colors.black),
+          style: TextStyle(
+              fontSize: (widget.name1 + widget.name2).length < 25 ? 20 : 12,
+              color: Colors.black),
         )),
       ),
     );
@@ -106,13 +115,19 @@ class _ProfilePageState extends State<ProfilePage> {
         child: (Text(
           widget.name2,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 20, color: Colors.black),
+          style: TextStyle(
+              fontSize: (widget.name1 + widget.name2).length < 25 ? 20 : 12,
+              color: Colors.black),
         )),
       ),
     );
 
     final back_arrow = GestureDetector(
-      onTap: () => Navigator.pop(context),
+      onTap: () {
+        final List<String> res = [widget.name1, widget.name2, widget.number];
+
+        Navigator.pop(context, res);
+      },
       child: AnimatedOpacity(
         curve: Curves.fastOutSlowIn,
         duration: Duration(milliseconds: 500),
@@ -253,6 +268,30 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
     );
+    final creation_time_info = AnimatedOpacity(
+      opacity: fields_left_visible ? 1 : 0,
+      duration: Duration(milliseconds: 1000),
+      curve: Curves.fastOutSlowIn,
+      child: Container(
+        width: 150,
+        height: 30,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(30)),
+          border: Border.all(color: Colors.deepOrangeAccent, width: 3),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Text(formatter.format(creationtime_date)),
+            ),
+          ),
+        ),
+      ),
+    );
+
     final email_label = Visibility(
       child: AnimatedOpacity(
         duration: Duration(milliseconds: 1000),
@@ -262,6 +301,30 @@ class _ProfilePageState extends State<ProfilePage> {
           'Email:',
           textAlign: TextAlign.left,
           style: TextStyle(fontSize: 15, color: Colors.black),
+        ),
+      ),
+    );
+    final email_info = AnimatedOpacity(
+      opacity: fields_left_visible ? 1 : 0,
+      duration: Duration(milliseconds: 1000),
+      curve: Curves.fastOutSlowIn,
+      child: Container(
+        width: 150,
+        height: 30,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(30)),
+          border: Border.all(color: Colors.deepOrangeAccent, width: 3),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Text(FirebaseAuth.instance.currentUser?.email.toString()
+                  as String),
+            ),
+          ),
         ),
       ),
     );
@@ -322,9 +385,9 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 email_label,
                 SizedBox(
-                  width: 55,
+                  width: 85,
                 ),
-                last_name_label
+                email_info
               ],
             ),
             SizedBox(
@@ -335,9 +398,9 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 creation_time,
                 SizedBox(
-                  width: 50,
+                  width: 30,
                 ),
-                last_name_label
+                creation_time_info,
               ],
             )
           ],

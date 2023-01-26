@@ -304,7 +304,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 onPressed: () async {
                   await Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => Transition()));
-                  Navigator.push(
+                  List<String> new_info = await Navigator.push(
                     context,
                     PageRouteBuilder(
                       pageBuilder: (BuildContext context,
@@ -320,6 +320,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       reverseTransitionDuration: Duration.zero,
                     ),
                   );
+                  setState(() {
+                    display_name = new_info[0];
+                    display_second_name = new_info[1];
+                    number = new_info[3];
+                  });
                 }),
           ),
         ),
@@ -507,22 +512,47 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               Row(children: [
                 Text(
                   display_name,
-                  style: TextStyle(fontSize: 15, color: Colors.white),
+                  style: TextStyle(
+                      fontSize: (display_name + display_second_name).length > 26
+                          ? 11
+                          : 15,
+                      color: Colors.white),
                 ),
                 SizedBox(
                   width: 5,
                 ),
                 Text(
                   display_second_name,
-                  style: TextStyle(fontSize: 15, color: Colors.white),
+                  style: TextStyle(
+                      fontSize: (display_name + display_second_name).length > 20
+                          ? 11
+                          : 15,
+                      color: Colors.white),
                 ),
               ]),
               SizedBox(
                 width: 6,
               ),
               GestureDetector(
-                onTap: () {
-                  print('im working');
+                onTap: () async {
+                  await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => Transition()));
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (BuildContext context,
+                          Animation<double> animation1,
+                          Animation<double> animation2) {
+                        return ProfilePage(
+                          number: number,
+                          name1: display_name,
+                          name2: display_second_name,
+                        );
+                      },
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                    ),
+                  );
                 },
                 child: CircleAvatar(
                   radius: 16,

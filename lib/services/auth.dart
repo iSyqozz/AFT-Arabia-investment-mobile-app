@@ -37,6 +37,10 @@ class AuthService {
       return true;
     } catch (e) {
       print(e.toString());
+      if (e.toString() ==
+          '[firebase_auth/email-already-in-use] The email address is already in use by another account.') {
+        return 3;
+      }
       return 2;
     }
   }
