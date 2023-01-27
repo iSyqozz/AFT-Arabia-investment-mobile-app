@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -6,6 +7,12 @@ import 'package:provider/provider.dart';
 import 'services/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'change-email.dart';
+import 'utils/transition.dart';
+import 'profile_edit_page.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfilePage extends StatefulWidget {
   String name1;
@@ -25,10 +32,14 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  double scr_width = 0;
+  double scr_hight = 0;
+
   DateTime creationtime_date =
       FirebaseAuth.instance.currentUser?.metadata.creationTime as DateTime;
   final DateFormat formatter = DateFormat('yyyy-MM-dd');
 
+  final _image_auth = FirebaseStorage.instance.ref();
   final auth = FirebaseAuth.instance.currentUser;
   bool is_built = false;
   double cover_hight = 0;
@@ -45,6 +56,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   double _info_border_hight = 80;
   bool fields_left_visible = false;
+  double buttons_width = 20;
+  double button_offset = 20;
+  bool buttons_opacity = false;
 
   //page initial animations
   @override
@@ -76,6 +90,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 setState(() {
                   fields_left_visible = true;
                 });
+                Timer mytimer = Timer(Duration(milliseconds: 200), (() {
+                  setState(() {
+                    buttons_opacity = true;
+                    button_offset = 0;
+                  });
+                }));
               }));
             }));
           });
@@ -86,6 +106,32 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    this.scr_width = MediaQuery.of(context).size.width;
+    final back_arrow = GestureDetector(
+      onTap: () {
+        final List<String> res = [widget.name1, widget.name2, widget.number];
+
+        Navigator.pop(context, res);
+      },
+      child: AnimatedOpacity(
+        curve: Curves.fastOutSlowIn,
+        duration: Duration(milliseconds: 500),
+        opacity: pic_visible ? 1 : 0,
+        child: AnimatedPadding(
+          curve: Curves.fastOutSlowIn,
+          duration: Duration(milliseconds: 500),
+          padding: new EdgeInsets.fromLTRB(arrow_x, 10, 0, 0),
+          child: CircleAvatar(
+            backgroundColor: Colors.white,
+            child: Icon(
+              Icons.keyboard_arrow_left_outlined,
+              size: 30,
+            ),
+          ),
+        ),
+      ),
+    );
+
     final name_ind = AnimatedOpacity(
       duration: Duration(milliseconds: 1000),
       opacity: pic_visible ? 1 : 0,
@@ -122,31 +168,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
 
-    final back_arrow = GestureDetector(
-      onTap: () {
-        final List<String> res = [widget.name1, widget.name2, widget.number];
-
-        Navigator.pop(context, res);
-      },
-      child: AnimatedOpacity(
-        curve: Curves.fastOutSlowIn,
-        duration: Duration(milliseconds: 500),
-        opacity: pic_visible ? 1 : 0,
-        child: AnimatedPadding(
-          curve: Curves.fastOutSlowIn,
-          duration: Duration(milliseconds: 500),
-          padding: new EdgeInsets.fromLTRB(arrow_x, 10, 0, 0),
-          child: CircleAvatar(
-            backgroundColor: Colors.white,
-            child: Icon(
-              Icons.keyboard_arrow_left_outlined,
-              size: 30,
-            ),
-          ),
-        ),
-      ),
-    );
-
     final first_name_label = Visibility(
       child: AnimatedOpacity(
         duration: Duration(milliseconds: 1000),
@@ -155,7 +176,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Text(
           'First Name:',
           textAlign: TextAlign.left,
-          style: TextStyle(fontSize: 15, color: Colors.black),
+          style: TextStyle(fontSize: 15, color: Colors.blueGrey),
         ),
       ),
     );
@@ -192,7 +213,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Text(
           'Last Name:',
           textAlign: TextAlign.left,
-          style: TextStyle(fontSize: 15, color: Colors.black),
+          style: TextStyle(fontSize: 15, color: Colors.blueGrey),
         ),
       ),
     );
@@ -228,7 +249,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Text(
           'Number:',
           textAlign: TextAlign.left,
-          style: TextStyle(fontSize: 15, color: Colors.black),
+          style: TextStyle(fontSize: 15, color: Colors.blueGrey),
         ),
       ),
     );
@@ -264,7 +285,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Text(
           'Creation Time:',
           textAlign: TextAlign.left,
-          style: TextStyle(fontSize: 15, color: Colors.black),
+          style: TextStyle(fontSize: 15, color: Colors.blueGrey),
         ),
       ),
     );
@@ -300,7 +321,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Text(
           'Email:',
           textAlign: TextAlign.left,
-          style: TextStyle(fontSize: 15, color: Colors.black),
+          style: TextStyle(fontSize: 15, color: Colors.blueGrey),
         ),
       ),
     );
@@ -332,14 +353,14 @@ class _ProfilePageState extends State<ProfilePage> {
     final info_col = Row(
       children: [
         SizedBox(
-          width: MediaQuery.of(context).size.width / 12,
+          width: MediaQuery.of(context).size.width / 10,
         ),
         Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              height: 50,
+              height: 30,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -408,6 +429,112 @@ class _ProfilePageState extends State<ProfilePage> {
       ],
     );
 
+    final change_email_button = GestureDetector(
+      onTap: () async {
+        await Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => Transition()));
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (BuildContext context, Animation<double> animation1,
+                Animation<double> animation2) {
+              return ChangeEmail();
+            },
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+      },
+      child: AnimatedPadding(
+        duration: Duration(milliseconds: 300),
+        padding: EdgeInsets.only(right: button_offset),
+        child: AnimatedOpacity(
+          opacity: buttons_opacity ? 1 : 0,
+          curve: Curves.fastOutSlowIn,
+          duration: Duration(milliseconds: 300),
+          child: Container(
+            width: scr_width / 1.8,
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+                border: Border.all(
+                    color: Colors.deepOrangeAccent, style: BorderStyle.solid),
+                borderRadius: BorderRadius.circular(40),
+                color: Colors.white),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Icon(Icons.email_outlined),
+                SizedBox(
+                  width: 20,
+                ),
+                Text(
+                  'Change E-mail Address',
+                  style: TextStyle(fontSize: 13),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final edit_personal_info = GestureDetector(
+      onTap: () async {
+        await Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => Transition()));
+        List<String> new_info = await Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (BuildContext context, Animation<double> animation1,
+                Animation<double> animation2) {
+              return ProfileEditPage(
+                  name1: widget.name1,
+                  name2: widget.name2,
+                  number: widget.number);
+            },
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+        setState(() {
+          widget.name1 = new_info[0];
+          widget.name2 = new_info[1];
+          widget.number = new_info[2];
+        });
+      },
+      child: AnimatedPadding(
+        duration: Duration(milliseconds: 500),
+        padding: EdgeInsets.only(right: button_offset),
+        child: AnimatedOpacity(
+          opacity: buttons_opacity ? 1 : 0,
+          curve: Curves.fastOutSlowIn,
+          duration: Duration(milliseconds: 500),
+          child: Container(
+            width: scr_width / 1.8,
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+                border: Border.all(
+                    color: Colors.deepOrangeAccent, style: BorderStyle.solid),
+                borderRadius: BorderRadius.circular(40),
+                color: Colors.white),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Icon(Icons.email_outlined),
+                SizedBox(
+                  width: 20,
+                ),
+                Text(
+                  'Edit Profile Info',
+                  style: TextStyle(fontSize: 13),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
     final info_section = AnimatedPadding(
       duration: Duration(milliseconds: 600),
       curve: Curves.fastOutSlowIn,
@@ -427,32 +554,61 @@ class _ProfilePageState extends State<ProfilePage> {
                   color: Colors.white,
                   border: Border.all(color: Colors.deepOrangeAccent, width: 4),
                   borderRadius: BorderRadius.all(Radius.circular(60))),
-              child: info_col,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(height: 10),
+                  Text(
+                    'Profile Info',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 20, color: Colors.blueGrey),
+                  ),
+                  info_col,
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height / 15,
+                  ),
+                  edit_personal_info,
+                  SizedBox(
+                    height: 5,
+                  ),
+                  change_email_button,
+                ],
+              ),
             )),
       ),
     );
 
-    final pic = Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-      child: Center(
-        child: AnimatedOpacity(
-          duration: Duration(milliseconds: 600),
-          curve: Curves.fastOutSlowIn,
-          opacity: pic_visible ? 1 : 0,
-          child: AnimatedAlign(
-            alignment: pic_align,
+    final pic = GestureDetector(
+      onTap: (() {
+        showDialog(
+            context: context,
+            builder: ((context) {
+              return AlertDialog();
+            }));
+      }),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+        child: Center(
+          child: AnimatedOpacity(
             duration: Duration(milliseconds: 600),
             curve: Curves.fastOutSlowIn,
-            child: CircleAvatar(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 0, 10, 10),
-                child: Align(
-                    alignment: Alignment.bottomRight,
-                    child: Icon(Icons.edit_outlined)),
+            opacity: pic_visible ? 1 : 0,
+            child: AnimatedAlign(
+              alignment: pic_align,
+              duration: Duration(milliseconds: 600),
+              curve: Curves.fastOutSlowIn,
+              child: CircleAvatar(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 10, 10),
+                  child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: Icon(Icons.edit_outlined)),
+                ),
+                radius: 90,
+                backgroundImage:
+                    Image.asset('lib/images/pfp-placeholder.jpg').image,
               ),
-              radius: 90,
-              backgroundImage:
-                  Image.asset('lib/images/pfp-placeholder.jpg').image,
             ),
           ),
         ),

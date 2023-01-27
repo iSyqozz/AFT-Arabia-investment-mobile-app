@@ -17,16 +17,17 @@ class DatabaseService {
     String name,
     String second_name,
     String number,
-    String email,
   ) async {
     try {
-      return await user_collection.doc(uid).set({
+      final res = await user_collection.doc(uid).set({
         'name': name,
         'second name': second_name,
         'number': number,
       });
+      return true;
     } catch (e) {
       print(e.toString());
+      return null;
     }
     ;
   }

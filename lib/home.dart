@@ -323,7 +323,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   setState(() {
                     display_name = new_info[0];
                     display_second_name = new_info[1];
-                    number = new_info[3];
+                    number = new_info[2];
                   });
                 }),
           ),
