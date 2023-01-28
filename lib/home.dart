@@ -32,6 +32,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String display_second_name = '---';
   String? curr_user_id = '---';
   String number = '---';
+  ImageProvider profile_pic =
+      Image.asset('lib/images/pfp-placeholder.jpg').image;
 
   void remove(AnimationController e) {
     e.dispose();
@@ -64,11 +66,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           display_second_name = temp['second name'];
           number = temp['number'];
           curr_user_id = uid;
+          profile_pic = temp['Profile Photo'] == ''
+              ? Image.asset(
+                  'lib/images/pfp-placeholder.jpg',
+                  fit: BoxFit.contain,
+                ).image
+              : Image.network(temp['Profile Photo']).image;
         } catch (e) {
           print(e.toString());
         }
       });
     });
+    //Navigator.pop(context);
   }
 
   @override
@@ -304,7 +313,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 onPressed: () async {
                   await Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => Transition()));
-                  List<String> new_info = await Navigator.push(
+                  List<dynamic> new_info = await Navigator.push(
                     context,
                     PageRouteBuilder(
                       pageBuilder: (BuildContext context,
@@ -314,6 +323,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           number: number,
                           name1: display_name,
                           name2: display_second_name,
+                          current_uid: user?.uid as String,
+                          home_file_path: profile_pic,
                         );
                       },
                       transitionDuration: Duration.zero,
@@ -324,6 +335,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     display_name = new_info[0];
                     display_second_name = new_info[1];
                     number = new_info[2];
+                    profile_pic = new_info[3];
                   });
                 }),
           ),
@@ -537,7 +549,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 onTap: () async {
                   await Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => Transition()));
-                  Navigator.push(
+                  List<dynamic> new_info = await Navigator.push(
                     context,
                     PageRouteBuilder(
                       pageBuilder: (BuildContext context,
@@ -547,20 +559,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           number: number,
                           name1: display_name,
                           name2: display_second_name,
+                          current_uid: user?.uid as String,
+                          home_file_path: profile_pic,
                         );
                       },
                       transitionDuration: Duration.zero,
                       reverseTransitionDuration: Duration.zero,
                     ),
                   );
+                  setState(() {
+                    display_name = new_info[0];
+                    display_second_name = new_info[1];
+                    number = new_info[2];
+                    profile_pic = new_info[3];
+                  });
                 },
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundImage: Image.asset(
-                    'lib/images/pfp-placeholder.jpg',
-                    fit: BoxFit.contain,
-                  ).image,
-                ),
+                child: CircleAvatar(radius: 16, backgroundImage: profile_pic),
               ),
               SizedBox(
                 width: 5,

@@ -1,9 +1,6 @@
 TODO:
-complete Email Change Backend
-adjust transition and make it into a nav push/pop everywhere
-Hide/show homepage appbar on side menu hide/show
-Add Account Settings Page and backend
-
-
-try to look for bugs and adjust UI
-Prompt dad for info about packages for investments and plan accordingly   
+configure rules and themes.
+work in offline to remove bugs.
+try smaller emulators
+config app name  
+try to change flutter project name.

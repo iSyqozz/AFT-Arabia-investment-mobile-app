@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
-import 'services/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'change-email.dart';
@@ -13,18 +11,22 @@ import 'profile_edit_page.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'services/database.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class ProfilePage extends StatefulWidget {
   String name1;
   String name2;
   String number;
-  //String email;
+  String current_uid;
+  ImageProvider home_file_path;
   ProfilePage({
     super.key,
     required this.name1,
     required this.name2,
     required this.number,
-    //required this.email,
+    required this.current_uid,
+    required this.home_file_path,
   });
 
   @override
@@ -106,10 +108,16 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.current_uid);
     this.scr_width = MediaQuery.of(context).size.width;
     final back_arrow = GestureDetector(
       onTap: () {
-        final List<String> res = [widget.name1, widget.name2, widget.number];
+        final List<dynamic> res = [
+          widget.name1,
+          widget.name2,
+          widget.number,
+          widget.home_file_path
+        ];
 
         Navigator.pop(context, res);
       },
@@ -581,11 +589,320 @@ class _ProfilePageState extends State<ProfilePage> {
 
     final pic = GestureDetector(
       onTap: (() {
-        showDialog(
+        showModalBottomSheet(
             context: context,
-            builder: ((context) {
-              return AlertDialog();
-            }));
+            builder: (context) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  ListTile(
+                    leading: new Icon(Icons.photo),
+                    title: new Text('Change Profile Picture'),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      final file = await showDialog(
+                          context: context,
+                          builder: ((context) {
+                            var _imageFile = null;
+                            final storage_ref = FirebaseStorage.instance;
+                            String image_url = '';
+                            var _uploadTask;
+                            Future<XFile?> _pick_image(
+                                ImageSource source) async {
+                              return await ImagePicker.platform
+                                  .getImage(source: source);
+                            }
+
+                            void _start_upload() async {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => Container(
+                                          child: SpinKitCubeGrid(
+                                        color: Colors.deepOrangeAccent,
+                                        duration: Duration(milliseconds: 1000),
+                                      ))));
+                              try {
+                                DatabaseService my_database =
+                                    DatabaseService(uid: widget.current_uid);
+                                print(
+                                    'upload started go and check the storage');
+                                String filepath =
+                                    'Profile Pictures/${widget.current_uid}.png';
+                                _uploadTask = await storage_ref
+                                    .ref()
+                                    .child(filepath)
+                                    .putFile(File(_imageFile.path));
+                                image_url = await storage_ref
+                                    .ref()
+                                    .child(filepath)
+                                    .getDownloadURL();
+                                bool res =
+                                    await my_database.update_profile_photo(
+                                        widget.name1,
+                                        widget.name2,
+                                        widget.number,
+                                        image_url);
+                                Navigator.of(context).pop();
+                                if (res == false) {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: Text(
+                                      'Failed to Update Profile Picture',
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ));
+                                  print(
+                                      'adding download link to firestore failed');
+                                } else {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: Text(
+                                      'Done!',
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    backgroundColor: Colors.teal,
+                                  ));
+                                  print('upload susccessful');
+                                  Navigator.of(context)
+                                      .pop(FileImage(File(_imageFile.path)));
+                                }
+                              } catch (e) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text(
+                                    'Failed to Update Profile Picture',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ));
+                                print(e.toString());
+                              }
+                            }
+
+                            Future<CroppedFile?> _crop_image() async {
+                              return await ImageCropper.platform.cropImage(
+                                sourcePath: _imageFile?.path,
+                              );
+                            }
+
+                            void clear() {
+                              setState(() {
+                                _imageFile = null;
+                              });
+                            }
+
+                            return StatefulBuilder(
+                                builder: ((context, setState) {
+                              return AlertDialog(
+                                  title: Center(child: Text('Upload Photo')),
+                                  content: _imageFile == null
+                                      ? Container(
+                                          height: 200,
+                                          width: 300,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              SizedBox(
+                                                height: 20,
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  GestureDetector(
+                                                      onTap: (() async {
+                                                        XFile? selected =
+                                                            await _pick_image(
+                                                                ImageSource
+                                                                    .gallery);
+                                                        if (selected != null) {
+                                                          final temp =
+                                                              await selected
+                                                                  .length();
+                                                          print(temp);
+                                                          if (temp > 2097152) {
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(
+                                                                    SnackBar(
+                                                              content: Text(
+                                                                  'Image Size greater than  2MB !!'),
+                                                              backgroundColor:
+                                                                  Colors.red,
+                                                            ));
+                                                            Navigator.pop(
+                                                                context);
+                                                          }
+                                                        }
+                                                        setState(() {
+                                                          _imageFile = selected;
+                                                        });
+                                                      }),
+                                                      child: Icon(
+                                                        Icons.photo,
+                                                        size: 30,
+                                                      )),
+                                                ],
+                                              ),
+                                              SizedBox(
+                                                height: 20,
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text('Upload from device'),
+                                                ],
+                                              ),
+                                              SizedBox(
+                                                height: 40,
+                                              ),
+                                              Text(
+                                                'Max file size: 2 MB',
+                                                style: TextStyle(
+                                                    color: Colors.blueGrey),
+                                              )
+                                            ],
+                                          ),
+                                        )
+                                      : Container(
+                                          height: 200,
+                                          width: 300,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              CircleAvatar(
+                                                backgroundColor: Color.fromARGB(
+                                                    255, 243, 240, 240),
+                                                backgroundImage: FileImage(
+                                                    File(_imageFile.path)),
+                                                radius: 50,
+                                              ),
+                                              SizedBox(
+                                                height: 30,
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceEvenly,
+                                                children: [
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      _start_upload();
+                                                    },
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: Colors
+                                                            .deepOrangeAccent,
+                                                        borderRadius:
+                                                            BorderRadius.all(
+                                                                Radius.circular(
+                                                                    70)),
+                                                      ),
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(12.0),
+                                                        child: Text(
+                                                          'Save',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 12),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  GestureDetector(
+                                                    onTap: () async {
+                                                      final cropped =
+                                                          await _crop_image();
+                                                      setState(() {
+                                                        _imageFile = cropped ??
+                                                            _imageFile;
+                                                      });
+                                                    },
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: Colors
+                                                            .deepOrangeAccent,
+                                                        borderRadius:
+                                                            BorderRadius.all(
+                                                                Radius.circular(
+                                                                    70)),
+                                                      ),
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(12.0),
+                                                        child: Text(
+                                                          'Edit Image',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 12),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.red,
+                                                        borderRadius:
+                                                            BorderRadius.all(
+                                                                Radius.circular(
+                                                                    70)),
+                                                      ),
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(12.0),
+                                                        child: Text(
+                                                          'Cancel',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 12),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              )
+                                            ],
+                                          ),
+                                        ));
+                            }));
+                          }));
+                      if (file != null) {
+                        setState(() {
+                          setState(() {
+                            widget.home_file_path = file;
+                          });
+                        });
+                      }
+                    },
+                  ),
+                  ListTile(
+                    leading: new Icon(Icons.delete_forever),
+                    title: new Text('Remove Profile Picture'),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              );
+            });
       }),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
@@ -599,16 +916,14 @@ class _ProfilePageState extends State<ProfilePage> {
               duration: Duration(milliseconds: 600),
               curve: Curves.fastOutSlowIn,
               child: CircleAvatar(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 10, 10),
-                  child: Align(
-                      alignment: Alignment.bottomRight,
-                      child: Icon(Icons.edit_outlined)),
-                ),
-                radius: 90,
-                backgroundImage:
-                    Image.asset('lib/images/pfp-placeholder.jpg').image,
-              ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 10, 10),
+                    child: Align(
+                        alignment: Alignment.bottomRight,
+                        child: Icon(Icons.edit_outlined)),
+                  ),
+                  radius: 90,
+                  backgroundImage: widget.home_file_path),
             ),
           ),
         ),

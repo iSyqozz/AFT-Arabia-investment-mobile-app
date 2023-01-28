@@ -13,6 +13,22 @@ class DatabaseService {
     return temp;
   }
 
+  Future<bool> update_profile_photo(
+      String name, String second_name, String number, String path) async {
+    try {
+      final res = await user_collection.doc(uid).set({
+        'name': name,
+        'second name': second_name,
+        'number': number,
+        'Profile Photo': path
+      });
+      return true;
+    } catch (e) {
+      print(e.toString());
+      return false;
+    }
+  }
+
   Future update_user_data(
     String name,
     String second_name,
@@ -23,6 +39,7 @@ class DatabaseService {
         'name': name,
         'second name': second_name,
         'number': number,
+        'Profile Photo': ''
       });
       return true;
     } catch (e) {
