@@ -8,7 +8,9 @@ export 'services/database.dart';
 import 'services/auth.dart' show AuthService;
 
 class ChangeEmail extends StatefulWidget {
-  const ChangeEmail({super.key});
+  Color screen_mode;
+  String user_theme;
+  ChangeEmail({super.key, required this.screen_mode, required this.user_theme});
 
   @override
   State<ChangeEmail> createState() => _ChangeEmailState();
@@ -25,6 +27,16 @@ class _ChangeEmailState extends State<ChangeEmail> {
   bool _hidden = true;
   IconData pass_ind = Icons.remove_red_eye_outlined;
   bool is_email_changed = false;
+  Map<String, List<Color>> theme_map = {
+    'orange': [Colors.deepOrangeAccent, Colors.deepOrange],
+    'purple': [Color.fromARGB(255, 40, 21, 92), Color.fromARGB(255, 29, 7, 66)],
+    'teal': [Colors.teal, Color.fromARGB(255, 1, 92, 83)],
+  };
+
+  Map<Color, Color> screen_mode_map = {
+    Colors.white: Colors.black,
+    Color.fromARGB(66, 78, 74, 74): Colors.white,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -33,24 +45,25 @@ class _ChangeEmailState extends State<ChangeEmail> {
     final title = Text(
       'Change Email',
       textAlign: TextAlign.center,
-      style: TextStyle(fontSize: 40),
+      style:
+          TextStyle(fontSize: 40, color: screen_mode_map[widget.screen_mode]),
     );
 
     final email_label = Text(
       '    Your Account E-mail:',
-      style: TextStyle(color: Colors.black54),
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
     );
     final pass_lable = Text(
       '    Password:',
-      style: TextStyle(color: Colors.black54),
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
     );
     final new_email_label = Text(
       '    New E-mail:',
-      style: TextStyle(color: Colors.black54),
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
     );
     final confirm_new_email_label = Text(
       '    Confirm new E-mail:',
-      style: TextStyle(color: Colors.black54),
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
     );
 
     final email = TextFormField(
@@ -72,12 +85,19 @@ class _ChangeEmailState extends State<ChangeEmail> {
         }
       },
       controller: email_controller,
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
       decoration: InputDecoration(
         hintText: '',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32.0),
+            borderSide: BorderSide(
+                color: screen_mode_map[widget.screen_mode] as Color)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0),
+        ),
       ),
     );
 
@@ -101,13 +121,20 @@ class _ChangeEmailState extends State<ChangeEmail> {
         }
       },
       controller: pass_controller,
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
       keyboardType: TextInputType.name,
       autofocus: false,
       obscureText: _hidden,
       decoration: InputDecoration(
         hintText: '',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32.0),
+            borderSide: BorderSide(
+                color: screen_mode_map[widget.screen_mode] as Color)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0),
+        ),
       ),
     );
 
@@ -127,12 +154,19 @@ class _ChangeEmailState extends State<ChangeEmail> {
         }
       },
       controller: new_email_controller,
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
       decoration: InputDecoration(
         hintText: '',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32.0),
+            borderSide: BorderSide(
+                color: screen_mode_map[widget.screen_mode] as Color)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0),
+        ),
       ),
     );
 
@@ -155,12 +189,19 @@ class _ChangeEmailState extends State<ChangeEmail> {
         }
       },
       controller: verify_new_email_controller,
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
       decoration: InputDecoration(
         hintText: '',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32.0),
+            borderSide: BorderSide(
+                color: screen_mode_map[widget.screen_mode] as Color)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0),
+        ),
       ),
     );
 
@@ -172,7 +213,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
                 borderRadius: BorderRadius.circular(24),
               ),
               padding: EdgeInsets.fromLTRB(35, 12, 35, 12),
-              backgroundColor: Colors.deepOrangeAccent),
+              backgroundColor: theme_map[widget.user_theme]![0]),
           child:
               Text('Verify & Proceed', style: TextStyle(color: Colors.white)),
           onPressed: () async {
@@ -246,7 +287,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
                 borderRadius: BorderRadius.circular(24),
               ),
               padding: EdgeInsets.fromLTRB(35, 12, 35, 12),
-              backgroundColor: Colors.deepOrangeAccent),
+              backgroundColor: theme_map[widget.user_theme]![0]),
           child: Text('Return', style: TextStyle(color: Colors.white)),
           onPressed: () {
             if (is_email_changed) {
@@ -265,7 +306,11 @@ class _ChangeEmailState extends State<ChangeEmail> {
       child: Text(
         'A verification E-mail has been sent to the new address that you have provided.\n\nYou will be automatically signed out for re-authentication.',
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+        style: TextStyle(
+            color: widget.screen_mode == Colors.white
+                ? Colors.blueGrey
+                : Colors.white,
+            fontSize: 12),
       ),
     );
 
@@ -274,7 +319,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
         FocusScope.of(context).requestFocus(new FocusNode());
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: widget.screen_mode,
         body: Center(
           child: Form(
             key: _formkey,
@@ -318,14 +363,21 @@ class _ChangeEmailState extends State<ChangeEmail> {
                     },
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                      child: Icon(pass_ind),
+                      child: Icon(
+                        pass_ind,
+                        color: screen_mode_map[widget.screen_mode],
+                      ),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(215, 0, 0, 0),
                     child: Text(
                       'Clear all',
-                      style: TextStyle(color: Colors.blueGrey),
+                      style: TextStyle(
+                        color: widget.screen_mode == Colors.white
+                            ? Colors.blueGrey
+                            : Colors.white,
+                      ),
                     ),
                   ),
                   GestureDetector(
@@ -339,7 +391,10 @@ class _ChangeEmailState extends State<ChangeEmail> {
                     },
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-                      child: Icon(Icons.delete_forever_sharp),
+                      child: Icon(
+                        Icons.delete_forever_sharp,
+                        color: screen_mode_map[widget.screen_mode],
+                      ),
                     ),
                   )
                 ]),

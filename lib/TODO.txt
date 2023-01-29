@@ -1,6 +1,7 @@
 TODO:
-configure rules and themes.
-work in offline to remove bugs.
-try smaller emulators
-config app name  
-try to change flutter project name.
+complete theme setup for profile page path and backend
+add home page coming soon recent posts section
+add AFT bank page
+try to make a plan about the working for the investments 
+prompt dad for more
+ 

@@ -98,7 +98,7 @@ class AuthService {
           email: email, password: pwd);
       var user = result.user;
       await DatabaseService(uid: user?.uid)
-          .update_user_data(name, second_name, number);
+          .update_user_data(name, second_name, number, '');
       return _get_user_id(user);
     } catch (e) {
       print(e.toString());

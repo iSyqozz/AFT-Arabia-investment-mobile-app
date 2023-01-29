@@ -278,7 +278,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 pageBuilder: (BuildContext context,
                     Animation<double> animation1,
                     Animation<double> animation2) {
-                  return ResetPassPage();
+                  return ResetPassPage(
+                    screen_mode: Colors.white,
+                    user_theme: 'orange',
+                  );
                 },
                 transitionDuration: Duration.zero,
                 reverseTransitionDuration: Duration.zero,

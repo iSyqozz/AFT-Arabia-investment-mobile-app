@@ -33,13 +33,14 @@ class DatabaseService {
     String name,
     String second_name,
     String number,
+    String profile_photo_link,
   ) async {
     try {
       final res = await user_collection.doc(uid).set({
         'name': name,
         'second name': second_name,
         'number': number,
-        'Profile Photo': ''
+        'Profile Photo': profile_photo_link
       });
       return true;
     } catch (e) {

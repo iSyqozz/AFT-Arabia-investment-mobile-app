@@ -19,7 +19,9 @@ class ProfilePage extends StatefulWidget {
   String name2;
   String number;
   String current_uid;
+  Color screen_mode;
   ImageProvider home_file_path;
+  String pfp_url;
   ProfilePage({
     super.key,
     required this.name1,
@@ -27,6 +29,8 @@ class ProfilePage extends StatefulWidget {
     required this.number,
     required this.current_uid,
     required this.home_file_path,
+    required this.screen_mode,
+    required this.pfp_url,
   });
 
   @override
@@ -61,6 +65,11 @@ class _ProfilePageState extends State<ProfilePage> {
   double buttons_width = 20;
   double button_offset = 20;
   bool buttons_opacity = false;
+
+  Map<Color, Color> screen_mode_map = {
+    Colors.white: Colors.black,
+    Color.fromARGB(66, 78, 74, 74): Colors.white,
+  };
 
   //page initial animations
   @override
@@ -109,6 +118,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     print(widget.current_uid);
+    print(widget.pfp_url);
     this.scr_width = MediaQuery.of(context).size.width;
     final back_arrow = GestureDetector(
       onTap: () {
@@ -116,7 +126,8 @@ class _ProfilePageState extends State<ProfilePage> {
           widget.name1,
           widget.name2,
           widget.number,
-          widget.home_file_path
+          widget.home_file_path,
+          widget.pfp_url,
         ];
 
         Navigator.pop(context, res);
@@ -130,7 +141,7 @@ class _ProfilePageState extends State<ProfilePage> {
           duration: Duration(milliseconds: 500),
           padding: new EdgeInsets.fromLTRB(arrow_x, 10, 0, 0),
           child: CircleAvatar(
-            backgroundColor: Colors.white,
+            backgroundColor: widget.screen_mode,
             child: Icon(
               Icons.keyboard_arrow_left_outlined,
               size: 30,
@@ -148,13 +159,12 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: EdgeInsets.fromLTRB(0, 0, name_x, 0),
         duration: Duration(milliseconds: 500),
         curve: Curves.fastOutSlowIn,
-        child: (Text(
-          widget.name1,
-          textAlign: TextAlign.center,
-          style: TextStyle(
+        child: (Text(widget.name1,
+            textAlign: TextAlign.center,
+            style: TextStyle(
               fontSize: (widget.name1 + widget.name2).length < 25 ? 20 : 12,
-              color: Colors.black),
-        )),
+              color: screen_mode_map[widget.screen_mode],
+            ))),
       ),
     );
 
@@ -166,13 +176,12 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: EdgeInsets.fromLTRB(name_x, 0, 0, 0),
         duration: Duration(milliseconds: 500),
         curve: Curves.fastOutSlowIn,
-        child: (Text(
-          widget.name2,
-          textAlign: TextAlign.center,
-          style: TextStyle(
+        child: (Text(widget.name2,
+            textAlign: TextAlign.center,
+            style: TextStyle(
               fontSize: (widget.name1 + widget.name2).length < 25 ? 20 : 12,
-              color: Colors.black),
-        )),
+              color: screen_mode_map[widget.screen_mode],
+            ))),
       ),
     );
 
@@ -206,7 +215,10 @@ class _ProfilePageState extends State<ProfilePage> {
             alignment: Alignment.centerLeft,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Text(widget.name1),
+              child: Text(
+                widget.name1,
+                style: TextStyle(color: screen_mode_map[widget.screen_mode]),
+              ),
             ),
           ),
         ),
@@ -243,7 +255,10 @@ class _ProfilePageState extends State<ProfilePage> {
             alignment: Alignment.centerLeft,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Text(widget.name2),
+              child: Text(
+                widget.name2,
+                style: TextStyle(color: screen_mode_map[widget.screen_mode]),
+              ),
             ),
           ),
         ),
@@ -279,7 +294,10 @@ class _ProfilePageState extends State<ProfilePage> {
             alignment: Alignment.centerLeft,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Text(widget.number),
+              child: Text(
+                widget.number,
+                style: TextStyle(color: screen_mode_map[widget.screen_mode]),
+              ),
             ),
           ),
         ),
@@ -314,7 +332,10 @@ class _ProfilePageState extends State<ProfilePage> {
             alignment: Alignment.centerLeft,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Text(formatter.format(creationtime_date)),
+              child: Text(
+                formatter.format(creationtime_date),
+                style: TextStyle(color: screen_mode_map[widget.screen_mode]),
+              ),
             ),
           ),
         ),
@@ -350,8 +371,10 @@ class _ProfilePageState extends State<ProfilePage> {
             alignment: Alignment.centerLeft,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Text(FirebaseAuth.instance.currentUser?.email.toString()
-                  as String),
+              child: Text(
+                FirebaseAuth.instance.currentUser?.email.toString() as String,
+                style: TextStyle(color: screen_mode_map[widget.screen_mode]),
+              ),
             ),
           ),
         ),
@@ -446,7 +469,10 @@ class _ProfilePageState extends State<ProfilePage> {
           PageRouteBuilder(
             pageBuilder: (BuildContext context, Animation<double> animation1,
                 Animation<double> animation2) {
-              return ChangeEmail();
+              return ChangeEmail(
+                screen_mode: widget.screen_mode,
+                user_theme: '',
+              );
             },
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
@@ -464,20 +490,24 @@ class _ProfilePageState extends State<ProfilePage> {
             width: scr_width / 1.8,
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
-                border: Border.all(
-                    color: Colors.deepOrangeAccent, style: BorderStyle.solid),
-                borderRadius: BorderRadius.circular(40),
-                color: Colors.white),
+              border: Border.all(
+                  color: Colors.deepOrangeAccent, style: BorderStyle.solid),
+              borderRadius: BorderRadius.circular(40),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Icon(Icons.email_outlined),
+                Icon(
+                  Icons.email_outlined,
+                  color: screen_mode_map[widget.screen_mode],
+                ),
                 SizedBox(
                   width: 20,
                 ),
                 Text(
                   'Change E-mail Address',
-                  style: TextStyle(fontSize: 13),
+                  style: TextStyle(
+                      color: screen_mode_map[widget.screen_mode], fontSize: 13),
                 )
               ],
             ),
@@ -496,9 +526,12 @@ class _ProfilePageState extends State<ProfilePage> {
             pageBuilder: (BuildContext context, Animation<double> animation1,
                 Animation<double> animation2) {
               return ProfileEditPage(
-                  name1: widget.name1,
-                  name2: widget.name2,
-                  number: widget.number);
+                name1: widget.name1,
+                name2: widget.name2,
+                number: widget.number,
+                screen_mode: widget.screen_mode,
+                pfp_url: widget.pfp_url,
+              );
             },
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
@@ -521,20 +554,21 @@ class _ProfilePageState extends State<ProfilePage> {
             width: scr_width / 1.8,
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
-                border: Border.all(
-                    color: Colors.deepOrangeAccent, style: BorderStyle.solid),
-                borderRadius: BorderRadius.circular(40),
-                color: Colors.white),
+              border: Border.all(
+                  color: Colors.deepOrangeAccent, style: BorderStyle.solid),
+              borderRadius: BorderRadius.circular(40),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Icon(Icons.email_outlined),
+                Icon(Icons.person, color: screen_mode_map[widget.screen_mode]),
                 SizedBox(
                   width: 20,
                 ),
                 Text(
                   'Edit Profile Info',
-                  style: TextStyle(fontSize: 13),
+                  style: TextStyle(
+                      color: screen_mode_map[widget.screen_mode], fontSize: 13),
                 )
               ],
             ),
@@ -559,7 +593,6 @@ class _ProfilePageState extends State<ProfilePage> {
               width: MediaQuery.of(context).size.width / 1.1,
               height: MediaQuery.of(context).size.height / 1.8,
               decoration: BoxDecoration(
-                  color: Colors.white,
                   border: Border.all(color: Colors.deepOrangeAccent, width: 4),
                   borderRadius: BorderRadius.all(Radius.circular(60))),
               child: Column(
@@ -596,8 +629,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   ListTile(
+                    tileColor: widget.screen_mode == Colors.white
+                        ? Colors.white
+                        : Colors.black87,
+                    iconColor: screen_mode_map[widget.screen_mode],
                     leading: new Icon(Icons.photo),
-                    title: new Text('Change Profile Picture'),
+                    title: new Text('Change Profile Picture',
+                        style: TextStyle(
+                            color: screen_mode_map[widget.screen_mode])),
                     onTap: () async {
                       Navigator.pop(context);
                       final file = await showDialog(
@@ -663,8 +702,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                     backgroundColor: Colors.teal,
                                   ));
                                   print('upload susccessful');
-                                  Navigator.of(context)
-                                      .pop(FileImage(File(_imageFile.path)));
+                                  Navigator.of(context).pop([
+                                    FileImage(File(_imageFile.path)),
+                                    image_url
+                                  ]);
                                 }
                               } catch (e) {
                                 ScaffoldMessenger.of(context)
@@ -887,17 +928,89 @@ class _ProfilePageState extends State<ProfilePage> {
                       if (file != null) {
                         setState(() {
                           setState(() {
-                            widget.home_file_path = file;
+                            widget.home_file_path = file[0];
+                            widget.pfp_url = file[1];
                           });
                         });
                       }
                     },
                   ),
                   ListTile(
+                    iconColor: screen_mode_map[widget.screen_mode],
                     leading: new Icon(Icons.delete_forever),
-                    title: new Text('Remove Profile Picture'),
-                    onTap: () {
-                      Navigator.pop(context);
+                    tileColor: widget.screen_mode == Colors.white
+                        ? Colors.white
+                        : Colors.black87,
+                    title: new Text('Remove Profile Picture',
+                        style: TextStyle(
+                            color: screen_mode_map[widget.screen_mode])),
+                    onTap: () async {
+                      if (widget.pfp_url == '') {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            backgroundColor: Colors.red,
+                            content: Text(
+                              'No profile Picture to Delete!',
+                              textAlign: TextAlign.center,
+                            )));
+                        Navigator.of(context).pop();
+                      } else {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => Container(
+                                    child: SpinKitCubeGrid(
+                                  color: Colors.deepOrangeAccent,
+                                  duration: Duration(milliseconds: 1000),
+                                ))));
+                        try {
+                          DatabaseService my_database =
+                              DatabaseService(uid: widget.current_uid);
+                          String filepath =
+                              'Profile Pictures/${widget.current_uid}.png';
+                          final ref = await FirebaseStorage.instance
+                              .ref()
+                              .child(filepath);
+                          await ref.delete();
+                          bool res = await my_database.update_profile_photo(
+                              widget.name1, widget.name2, widget.number, '');
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+
+                          if (res == false) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(
+                                'Failed to Delete Profile Picture',
+                                textAlign: TextAlign.center,
+                              ),
+                              backgroundColor: Colors.red,
+                            ));
+                            print('adding download link to firestore failed');
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(
+                                'Done!',
+                                textAlign: TextAlign.center,
+                              ),
+                              backgroundColor: Colors.teal,
+                            ));
+                            setState(() {
+                              widget.home_file_path = Image.asset(
+                                'lib/images/pfp-placeholder.jpg',
+                                fit: BoxFit.contain,
+                              ).image;
+                              widget.pfp_url = '';
+                            });
+                            print('change susccessful');
+                          }
+                        } catch (e) {
+                          print(e.toString());
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                              'Failed to Delete Profile Picture',
+                              textAlign: TextAlign.center,
+                            ),
+                            backgroundColor: Colors.red,
+                          ));
+                        }
+                      }
                     },
                   ),
                 ],
@@ -935,7 +1048,7 @@ class _ProfilePageState extends State<ProfilePage> {
           FocusScope.of(context).requestFocus(new FocusNode());
         },
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: widget.screen_mode,
           body: Center(
             child: ListView(
               children: [

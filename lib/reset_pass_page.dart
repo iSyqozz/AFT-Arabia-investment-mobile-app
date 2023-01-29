@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'services/auth.dart';
 
 class ResetPassPage extends StatefulWidget {
-  const ResetPassPage({super.key});
+  Color screen_mode;
+  String user_theme;
+  ResetPassPage({
+    super.key,
+    required this.screen_mode,
+    required this.user_theme,
+  });
 
   @override
   State<ResetPassPage> createState() => _ResetPassPageState();
@@ -12,13 +18,22 @@ class _ResetPassPageState extends State<ResetPassPage> {
   final AuthService resetter = AuthService();
   final _formkey = GlobalKey<FormState>();
   final _email_controller = TextEditingController();
-
+  Map<Color, Color> screen_mode_map = {
+    Colors.white: Colors.black,
+    Color.fromARGB(66, 78, 74, 74): Colors.white,
+  };
+  Map<String, List<Color>> theme_map = {
+    'orange': [Colors.deepOrangeAccent, Colors.deepOrange],
+    'purple': [Color.fromARGB(255, 40, 21, 92), Color.fromARGB(255, 29, 7, 66)],
+    'teal': [Colors.teal, Color.fromARGB(255, 1, 92, 83)],
+  };
   @override
   Widget build(BuildContext context) {
     final title = Text(
       'Reset Password',
       textAlign: TextAlign.center,
-      style: TextStyle(fontSize: 40),
+      style:
+          TextStyle(fontSize: 40, color: screen_mode_map[widget.screen_mode]),
     );
 
     final details = Text(
@@ -42,12 +57,19 @@ class _ResetPassPageState extends State<ResetPassPage> {
         }
       },
       controller: _email_controller,
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
       decoration: InputDecoration(
-        hintText: 'example@abc.com',
+        hintText: widget.screen_mode == Colors.white ? 'example@abc.com' : '',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32.0),
+            borderSide: BorderSide(
+                color: screen_mode_map[widget.screen_mode] as Color)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0),
+        ),
       ),
     );
 
@@ -59,7 +81,7 @@ class _ResetPassPageState extends State<ResetPassPage> {
                 borderRadius: BorderRadius.circular(24),
               ),
               padding: EdgeInsets.all(12),
-              backgroundColor: Colors.deepOrangeAccent),
+              backgroundColor: theme_map[widget.user_theme]![0]),
           child: Text('Return', style: TextStyle(color: Colors.white)),
           onPressed: () {
             Navigator.pop(context);
@@ -74,7 +96,7 @@ class _ResetPassPageState extends State<ResetPassPage> {
                 borderRadius: BorderRadius.circular(24),
               ),
               padding: EdgeInsets.all(12),
-              backgroundColor: Colors.deepOrangeAccent),
+              backgroundColor: theme_map[widget.user_theme]![0]),
           child: Text('Send Email Link', style: TextStyle(color: Colors.white)),
           onPressed: () async {
             if (_formkey.currentState!.validate()) {
@@ -111,7 +133,7 @@ class _ResetPassPageState extends State<ResetPassPage> {
         FocusScope.of(context).requestFocus(new FocusNode());
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: widget.screen_mode,
         body: Form(
           key: _formkey,
           child: ListView(

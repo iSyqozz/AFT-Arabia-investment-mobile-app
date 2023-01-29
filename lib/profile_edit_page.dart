@@ -9,13 +9,16 @@ class ProfileEditPage extends StatefulWidget {
   String name1;
   String name2;
   String number;
-  //String email;
+  Color screen_mode;
+  String pfp_url;
+
   ProfileEditPage({
     super.key,
     this.name1 = '',
     this.name2 = '',
     this.number = '',
-    //required this.email,
+    required this.screen_mode,
+    required this.pfp_url,
   });
   _ProfileEditPage createState() => new _ProfileEditPage();
 }
@@ -34,21 +37,27 @@ class _ProfileEditPage extends State<ProfileEditPage>
 
   IconData pass_ind = Icons.remove_red_eye_outlined;
   bool is_hidden = true;
+  Map<Color, Color> screen_mode_map = {
+    Colors.white: Colors.black,
+    Color.fromARGB(66, 78, 74, 74): Colors.white,
+  };
 
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<User?>(context);
+    print(widget.pfp_url);
 
     final title = Text(
       'Personal Info',
       textAlign: TextAlign.center,
-      style: TextStyle(fontSize: 40),
+      style:
+          TextStyle(fontSize: 40, color: screen_mode_map[widget.screen_mode]),
     );
 
     final name_label = Text(
       //name lable and field
       '    First Name:',
-      style: TextStyle(color: Colors.black54),
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
     );
 
     final name = TextFormField(
@@ -64,17 +73,24 @@ class _ProfileEditPage extends State<ProfileEditPage>
       controller: first_name_controller,
       keyboardType: TextInputType.name,
       autofocus: false,
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
       decoration: InputDecoration(
-        hintText: 'Joe',
+        hintText: widget.screen_mode == Colors.white ? 'Joe' : '',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32.0),
+            borderSide: BorderSide(
+                color: screen_mode_map[widget.screen_mode] as Color)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0),
+        ),
       ),
     );
 
     //second name lable and field
     final second_name_label = Text(
       '    Second Name:',
-      style: TextStyle(color: Colors.black54),
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
     );
 
     final second_name = TextFormField(
@@ -89,18 +105,25 @@ class _ProfileEditPage extends State<ProfileEditPage>
       },
       controller: second_name_controller,
       keyboardType: TextInputType.name,
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
       autofocus: false,
       decoration: InputDecoration(
-        hintText: 'Smith',
+        hintText: widget.screen_mode == Colors.white ? 'Smith' : '',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32.0),
+            borderSide: BorderSide(
+                color: screen_mode_map[widget.screen_mode] as Color)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0),
+        ),
       ),
     );
 
     //number lable and field
     final number_label = Text(
       '    Number:',
-      style: TextStyle(color: Colors.black54),
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
     );
 
     final number = TextFormField(
@@ -115,11 +138,18 @@ class _ProfileEditPage extends State<ProfileEditPage>
       },
       controller: number_controller,
       keyboardType: TextInputType.number,
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
       autofocus: false,
       decoration: InputDecoration(
-        hintText: 'xxx-xxxxxxx',
+        hintText: widget.screen_mode == Colors.white ? 'xxx-xxxxxxx' : '',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32.0),
+            borderSide: BorderSide(
+                color: screen_mode_map[widget.screen_mode] as Color)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0),
+        ),
       ),
     );
 
@@ -137,8 +167,11 @@ class _ProfileEditPage extends State<ProfileEditPage>
           onPressed: () async {
             if (_formkey.currentState!.validate()) {
               final res = await DatabaseService(uid: user?.uid as String)
-                  .update_user_data(first_name_controller.text,
-                      second_name_controller.text, number_controller.text);
+                  .update_user_data(
+                      first_name_controller.text,
+                      second_name_controller.text,
+                      number_controller.text,
+                      widget.pfp_url);
               if (res != null) {
                 widget.name1 = first_name_controller.text;
                 widget.name2 = second_name_controller.text;
@@ -193,7 +226,7 @@ class _ProfileEditPage extends State<ProfileEditPage>
           FocusScope.of(context).requestFocus(new FocusNode());
         },
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: widget.screen_mode,
           body: Center(
             child: Form(
                 key: _formkey,

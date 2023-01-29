@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ContactPage extends StatefulWidget {
-  static String tag = 'contact-page';
-  const ContactPage({super.key});
+  Color screen_mode;
+  String user_theme;
+  ContactPage({super.key, required this.screen_mode, required this.user_theme});
 
   @override
   _ContactPageState createState() => _ContactPageState();
@@ -18,12 +19,21 @@ class _ContactPageState extends State<ContactPage> {
   final _body_controller = TextEditingController();
   String snackbar_content = 'Form Submitted Succesfully!';
   MaterialColor snackbar_col = Colors.teal;
+  Map<Color, Color> screen_mode_map = {
+    Colors.white: Colors.black,
+    Color.fromARGB(66, 78, 74, 74): Colors.white,
+  };
+  Map<String, List<Color>> theme_map = {
+    'orange': [Colors.deepOrangeAccent, Colors.deepOrange],
+    'purple': [Color.fromARGB(255, 40, 21, 92), Color.fromARGB(255, 29, 7, 66)],
+    'teal': [Colors.teal, Color.fromARGB(255, 1, 92, 83)],
+  };
 
   @override
   Widget build(BuildContext context) {
     final subject_label = Text(
       '    Subject:',
-      style: TextStyle(color: Colors.black54),
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
     );
 
     final subject = TextFormField(
@@ -39,22 +49,30 @@ class _ContactPageState extends State<ContactPage> {
       controller: _subject_controller,
       keyboardType: TextInputType.name,
       autofocus: false,
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
       decoration: InputDecoration(
-        hintText: 'Inquiry',
+        hintText: widget.screen_mode == Colors.white ? 'Inquiry' : '',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32.0),
+            borderSide: BorderSide(
+                color: screen_mode_map[widget.screen_mode] as Color)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0),
+        ),
       ),
     );
 
     final title = Text(
       'Contact Us',
       textAlign: TextAlign.center,
-      style: TextStyle(fontSize: 40),
+      style:
+          TextStyle(fontSize: 40, color: screen_mode_map[widget.screen_mode]),
     );
 
     final email_label = Text(
       '    E-mail:',
-      style: TextStyle(color: Colors.black54),
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
     );
 
     final email = TextFormField(
@@ -73,18 +91,25 @@ class _ContactPageState extends State<ContactPage> {
         }
       },
       controller: _email_controller,
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
       decoration: InputDecoration(
         hintText: 'example@abc.com',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32.0),
+            borderSide: BorderSide(
+                color: screen_mode_map[widget.screen_mode] as Color)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0),
+        ),
       ),
     );
 
     final body_label = Text(
       '    Content:',
-      style: TextStyle(color: Colors.black54),
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
     );
 
     final body = TextFormField(
@@ -98,13 +123,20 @@ class _ContactPageState extends State<ContactPage> {
         }
       },
       controller: _body_controller,
+      style: TextStyle(color: screen_mode_map[widget.screen_mode]),
       keyboardType: TextInputType.multiline,
       maxLines: 10,
       autofocus: false,
       decoration: InputDecoration(
         hintText: '...',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32.0),
+            borderSide: BorderSide(
+                color: screen_mode_map[widget.screen_mode] as Color)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0),
+        ),
       ),
     );
 
@@ -116,7 +148,7 @@ class _ContactPageState extends State<ContactPage> {
                 borderRadius: BorderRadius.circular(24),
               ),
               padding: EdgeInsets.all(12),
-              backgroundColor: Colors.deepOrangeAccent),
+              backgroundColor: theme_map[widget.user_theme]?[0]),
           child: Text('Return', style: TextStyle(color: Colors.white)),
           onPressed: () {
             Navigator.pop(context);
@@ -131,7 +163,7 @@ class _ContactPageState extends State<ContactPage> {
                 borderRadius: BorderRadius.circular(24),
               ),
               padding: EdgeInsets.all(12),
-              backgroundColor: Colors.deepOrangeAccent),
+              backgroundColor: theme_map[widget.user_theme]?[0]),
           child: Text('Submit', style: TextStyle(color: Colors.white)),
           onPressed: () async {
             if (_formkey.currentState!.validate()) {
@@ -195,7 +227,7 @@ class _ContactPageState extends State<ContactPage> {
           FocusScope.of(context).requestFocus(new FocusNode());
         },
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: widget.screen_mode,
           body: Center(
             child: Form(
               key: _formkey,

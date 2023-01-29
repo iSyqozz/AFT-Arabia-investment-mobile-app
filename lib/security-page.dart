@@ -6,7 +6,13 @@ import 'utils/transition.dart';
 import 'reset_pass_page.dart';
 
 class SecurityPage extends StatefulWidget {
-  const SecurityPage({super.key});
+  Color screen_mode;
+  String user_theme;
+  SecurityPage({
+    super.key,
+    required this.screen_mode,
+    required this.user_theme,
+  });
 
   @override
   State<SecurityPage> createState() => _SecurityPageState();
@@ -16,6 +22,15 @@ class _SecurityPageState extends State<SecurityPage> {
   bool _visible = false;
   bool _animated = false;
 
+  Map<Color, Color> screen_mode_map = {
+    Colors.white: Colors.black,
+    Color.fromARGB(66, 78, 74, 74): Colors.white,
+  };
+  Map<String, List<Color>> theme_map = {
+    'orange': [Colors.deepOrangeAccent, Colors.deepOrange],
+    'purple': [Color.fromARGB(255, 40, 21, 92), Color.fromARGB(255, 29, 7, 66)],
+    'teal': [Colors.teal, Color.fromARGB(255, 1, 92, 83)],
+  };
   void animate() {
     Timer my_timer = Timer(Duration(milliseconds: 100), () {
       setState(() {
@@ -41,7 +56,10 @@ class _SecurityPageState extends State<SecurityPage> {
           PageRouteBuilder(
             pageBuilder: (BuildContext context, Animation<double> animation1,
                 Animation<double> animation2) {
-              return ChangeEmail();
+              return ChangeEmail(
+                screen_mode: widget.screen_mode,
+                user_theme: widget.user_theme,
+              );
             },
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
@@ -59,19 +77,22 @@ class _SecurityPageState extends State<SecurityPage> {
             width: 320,
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-                border: Border.all(
-                    color: Colors.deepOrangeAccent, style: BorderStyle.solid),
-                borderRadius: BorderRadius.circular(40),
-                color: Colors.white),
+              border: Border.all(
+                  color: theme_map[widget.user_theme]![0],
+                  style: BorderStyle.solid),
+              borderRadius: BorderRadius.circular(40),
+            ),
             child: Row(
               children: [
-                Icon(Icons.email_outlined),
+                Icon(Icons.email_outlined,
+                    color: screen_mode_map[widget.screen_mode]),
                 SizedBox(
                   width: 20,
                 ),
                 Text(
                   'Change E-mail Address',
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(
+                      fontSize: 20, color: screen_mode_map[widget.screen_mode]),
                 )
               ],
             ),
@@ -89,7 +110,10 @@ class _SecurityPageState extends State<SecurityPage> {
           PageRouteBuilder(
             pageBuilder: (BuildContext context, Animation<double> animation1,
                 Animation<double> animation2) {
-              return ResetPassPage();
+              return ResetPassPage(
+                screen_mode: widget.screen_mode,
+                user_theme: widget.user_theme,
+              );
             },
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
@@ -107,19 +131,22 @@ class _SecurityPageState extends State<SecurityPage> {
             width: 320,
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-                border: Border.all(
-                    color: Colors.deepOrangeAccent, style: BorderStyle.solid),
-                borderRadius: BorderRadius.circular(40),
-                color: Colors.white),
+              border: Border.all(
+                  color: theme_map[widget.user_theme]![0],
+                  style: BorderStyle.solid),
+              borderRadius: BorderRadius.circular(40),
+            ),
             child: Row(
               children: [
-                Icon(Icons.key_outlined),
+                Icon(Icons.key_outlined,
+                    color: screen_mode_map[widget.screen_mode]),
                 SizedBox(
                   width: 20,
                 ),
                 Text(
                   'Change Password',
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(
+                      fontSize: 20, color: screen_mode_map[widget.screen_mode]),
                 )
               ],
             ),
@@ -136,7 +163,7 @@ class _SecurityPageState extends State<SecurityPage> {
                   borderRadius: BorderRadius.circular(24),
                 ),
                 padding: EdgeInsets.fromLTRB(22, 12, 22, 12),
-                backgroundColor: Colors.deepOrangeAccent),
+                backgroundColor: theme_map[widget.user_theme]![0]),
             child: Text('Dismiss', style: TextStyle(color: Colors.white)),
             onPressed: () => Navigator.pop(context)));
 
@@ -194,7 +221,8 @@ class _SecurityPageState extends State<SecurityPage> {
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
                 border: Border.all(
-                    color: Colors.deepOrangeAccent, style: BorderStyle.solid),
+                    color: theme_map[widget.user_theme]![0],
+                    style: BorderStyle.solid),
                 borderRadius: BorderRadius.circular(40),
                 color: Colors.red),
             child: Row(
@@ -222,7 +250,7 @@ class _SecurityPageState extends State<SecurityPage> {
                 borderRadius: BorderRadius.circular(24),
               ),
               padding: EdgeInsets.fromLTRB(35, 12, 35, 12),
-              backgroundColor: Colors.deepOrangeAccent),
+              backgroundColor: theme_map[widget.user_theme]![0]),
           child: Text('Return', style: TextStyle(color: Colors.white)),
           onPressed: () {
             Navigator.pop(context);
@@ -232,7 +260,8 @@ class _SecurityPageState extends State<SecurityPage> {
     final title = Text(
       'Security Settings',
       textAlign: TextAlign.center,
-      style: TextStyle(fontSize: 40),
+      style:
+          TextStyle(fontSize: 40, color: screen_mode_map[widget.screen_mode]),
     );
 
     return GestureDetector(
@@ -240,7 +269,7 @@ class _SecurityPageState extends State<SecurityPage> {
         FocusScope.of(context).requestFocus(new FocusNode());
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: widget.screen_mode,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

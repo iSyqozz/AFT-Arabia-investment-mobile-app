@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
+import 'package:aft_arabia/main.dart';
+
 import 'security-page.dart';
 import 'package:aft_arabia/services/auth.dart';
 import 'package:flutter/material.dart';
@@ -29,11 +31,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   MaterialColor snackbar_col = Colors.teal;
 
   String display_name = '---';
+  String pfp_url = '';
   String display_second_name = '---';
   String? curr_user_id = '---';
   String number = '---';
+  String user_theme = '---';
+
   ImageProvider profile_pic =
       Image.asset('lib/images/pfp-placeholder.jpg').image;
+  Color screen_mode = Color.fromARGB(66, 78, 74, 74);
+  Map<Color, Color> screen_mode_map = {
+    Colors.white: Colors.black,
+    Color.fromARGB(66, 78, 74, 74): Colors.white,
+  };
+
+  Map<String, List<Color>> theme_map = {
+    'orange': [Colors.deepOrangeAccent, Colors.deepOrange],
+    'purple': [Color.fromARGB(255, 40, 21, 92), Color.fromARGB(255, 29, 7, 66)],
+    'teal': [Colors.teal, Color.fromARGB(255, 1, 92, 83)],
+  };
 
   void remove(AnimationController e) {
     e.dispose();
@@ -55,7 +71,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
-  void set_display_name(String? uid) {
+  void change_screen_mode() {
+    setState(() {
+      if (screen_mode == Colors.white) {
+        screen_mode = Color.fromARGB(66, 78, 74, 74);
+      } else {
+        screen_mode = Colors.white;
+      }
+    });
+  }
+
+  void set_display_name(String? uid) async {
     print('setting name...');
     final temp = DatabaseService().fetch_data(uid);
     temp.get().then((value) {
@@ -72,12 +98,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   fit: BoxFit.contain,
                 ).image
               : Image.network(temp['Profile Photo']).image;
+          pfp_url = temp['Profile Photo'];
+          user_theme = temp['user theme'];
+          MaterialColor new_theme;
+
+          if (user_theme == 'orange') {
+            new_theme = Colors.deepOrange;
+          } else if (user_theme == 'teal')
+            new_theme = Colors.teal;
+          else {
+            new_theme = Colors.deepPurple;
+          }
+          MyApp.of(context)?.changeTheme(new_theme);
         } catch (e) {
           print(e.toString());
         }
       });
     });
-    //Navigator.pop(context);
   }
 
   @override
@@ -104,11 +141,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     final bug_label = Text(
       'Please provide a well-explained description',
-      style: TextStyle(color: Colors.black54, fontSize: 12),
+      style: TextStyle(color: screen_mode_map[screen_mode], fontSize: 12),
     );
     final bug_label2 = Text(
       ' of the Bug/Issue that you have encountered.',
-      style: TextStyle(color: Colors.black54, fontSize: 12),
+      style: TextStyle(color: screen_mode_map[screen_mode], fontSize: 12),
     );
 
     final bug_form = TextFormField(
@@ -125,11 +162,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       keyboardType: TextInputType.multiline,
       maxLines: 10,
       autofocus: false,
-      style: TextStyle(fontSize: 12),
+      style: TextStyle(fontSize: 12, color: screen_mode_map[screen_mode]),
       decoration: InputDecoration(
         hintText: '...',
         contentPadding: EdgeInsets.fromLTRB(22.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32.0),
+            borderSide:
+                BorderSide(color: screen_mode_map[screen_mode] as Color)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0),
+        ),
       ),
     );
 
@@ -141,7 +184,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(24),
                 ),
                 padding: EdgeInsets.fromLTRB(22, 12, 22, 12),
-                backgroundColor: Colors.deepOrangeAccent),
+                backgroundColor: theme_map[user_theme]?[0]),
             child: Text('Dismiss', style: TextStyle(color: Colors.white)),
             onPressed: () => Navigator.pop(context)));
 
@@ -153,7 +196,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(24),
                 ),
                 padding: EdgeInsets.fromLTRB(25, 12, 25, 12),
-                backgroundColor: Colors.teal),
+                backgroundColor: theme_map[user_theme]?[0]),
             child: Text('Submit', style: TextStyle(color: Colors.white)),
             onPressed: () async {
               if (_formkey.currentState!.validate()) {
@@ -191,12 +234,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       },
       child: SingleChildScrollView(
         child: AlertDialog(
+            backgroundColor: screen_mode,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(60),
             ),
             insetPadding: EdgeInsets.fromLTRB(55, 50, 55, 50),
             title: Text(
               'Report a Bug',
+              style: TextStyle(color: screen_mode_map[screen_mode]),
               textAlign: TextAlign.center,
             ),
             content: Form(
@@ -230,9 +275,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         size: Size(56, 56), // button width and height
         child: ClipOval(
           child: Material(
-            color: Colors.deepOrange, // button color
+            color: theme_map[user_theme]?[1], // button color
             child: InkWell(
-              splashColor: Colors.deepOrangeAccent, // splash color
+              splashColor: theme_map[user_theme]?[0], // splash color
               onTap: () {
                 showDialog(
                     context: context,
@@ -258,7 +303,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ),
       ),
-      backgroundColor: Colors.deepOrangeAccent,
+      backgroundColor: theme_map[user_theme]?[0],
       foregroundColor: Colors.white,
       onPressed: () {},
     ));
@@ -285,6 +330,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   await Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => Transition()));
                   remove(icon_controller);
+
                   await _auth.signOut();
                 }),
           ),
@@ -307,7 +353,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(24),
                     ),
                     padding: EdgeInsets.fromLTRB(30, 12, 30, 10),
-                    backgroundColor: Colors.deepOrange),
+                    backgroundColor: theme_map[user_theme]?[1]),
                 child: Text('Account',
                     style: TextStyle(color: Colors.white, fontSize: 13)),
                 onPressed: () async {
@@ -325,6 +371,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           name2: display_second_name,
                           current_uid: user?.uid as String,
                           home_file_path: profile_pic,
+                          screen_mode: screen_mode,
+                          pfp_url: pfp_url,
                         );
                       },
                       transitionDuration: Duration.zero,
@@ -336,6 +384,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     display_second_name = new_info[1];
                     number = new_info[2];
                     profile_pic = new_info[3];
+                    pfp_url = new_info[4];
                   });
                 }),
           ),
@@ -357,7 +406,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(24),
                     ),
                     padding: EdgeInsets.fromLTRB(30, 12, 30, 10),
-                    backgroundColor: Colors.deepOrange),
+                    backgroundColor: theme_map[user_theme]?[1]),
                 child: Text('Security',
                     style: TextStyle(color: Colors.white, fontSize: 13)),
                 onPressed: () async {
@@ -369,7 +418,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       pageBuilder: (BuildContext context,
                           Animation<double> animation1,
                           Animation<double> animation2) {
-                        return SecurityPage();
+                        return SecurityPage(
+                          screen_mode: screen_mode,
+                          user_theme: user_theme,
+                        );
                       },
                       transitionDuration: Duration.zero,
                       reverseTransitionDuration: Duration.zero,
@@ -395,8 +447,31 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(24),
                     ),
                     padding: EdgeInsets.fromLTRB(30, 12, 30, 10),
-                    backgroundColor: Colors.deepOrange),
+                    backgroundColor: theme_map[user_theme]?[1]),
                 child: Text('About Us',
+                    style: TextStyle(color: Colors.white, fontSize: 13)),
+                onPressed: () {}),
+          ),
+        ),
+      ),
+    );
+
+    final Widget investor_bank_button = Visibility(
+      visible: _side_menu_buttons_visible,
+      child: AnimatedOpacity(
+        opacity: _visible ? 1.0 : 0.0,
+        duration: Duration(milliseconds: 500),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 5),
+            child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    padding: EdgeInsets.fromLTRB(30, 12, 30, 10),
+                    backgroundColor: theme_map[user_theme]?[1]),
+                child: Text('AFT Bank',
                     style: TextStyle(color: Colors.white, fontSize: 13)),
                 onPressed: () {}),
           ),
@@ -418,7 +493,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(24),
                     ),
                     padding: EdgeInsets.fromLTRB(25, 13, 25, 11),
-                    backgroundColor: Colors.deepOrange),
+                    backgroundColor: theme_map[user_theme]?[1]),
                 child: Text('Contact Us',
                     style: TextStyle(color: Colors.white, fontSize: 12)),
                 onPressed: () async {
@@ -430,7 +505,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       pageBuilder: (BuildContext context,
                           Animation<double> animation1,
                           Animation<double> animation2) {
-                        return ContactPage();
+                        return ContactPage(
+                          screen_mode: screen_mode,
+                          user_theme: user_theme,
+                        );
                       },
                       transitionDuration: Duration.zero,
                       reverseTransitionDuration: Duration.zero,
@@ -476,16 +554,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: AnimatedContainer(
               curve: Curves.fastOutSlowIn,
               duration: Duration(milliseconds: 500),
-              color: Colors.deepOrangeAccent,
+              color: theme_map[user_theme]?[0],
               width: _side_menu_width,
               child: ListView(
                 children: <Widget>[
                   account_button,
+                  investor_bank_button,
                   security_button,
                   about_us,
                   contact_us_button,
                   SizedBox(
-                    height: 435,
+                    height: 380,
                   ),
                   sign_out_button,
                 ],
@@ -513,12 +592,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         FocusScope.of(context).requestFocus(new FocusNode());
       },
       child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: screen_mode,
           floatingActionButton: report_bug,
-          extendBodyBehindAppBar: true,
           appBar: AppBar(
             toolbarHeight: 45,
-            backgroundColor: Colors.deepOrangeAccent,
+            backgroundColor: theme_map[user_theme]?[0],
             leading: menu_button,
             actions: [
               Row(children: [
@@ -561,6 +639,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           name2: display_second_name,
                           current_uid: user?.uid as String,
                           home_file_path: profile_pic,
+                          screen_mode: screen_mode,
+                          pfp_url: pfp_url,
                         );
                       },
                       transitionDuration: Duration.zero,
@@ -572,6 +652,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     display_second_name = new_info[1];
                     number = new_info[2];
                     profile_pic = new_info[3];
+                    pfp_url = new_info[4];
                   });
                 },
                 child: CircleAvatar(radius: 16, backgroundImage: profile_pic),
@@ -584,8 +665,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           body: Stack(
             children: <Widget>[
               background_logo,
+              Align(
+                  alignment: Alignment.topRight,
+                  child: IconButton(
+                      onPressed: change_screen_mode,
+                      icon: Icon(
+                        screen_mode == Colors.white
+                            ? Icons.mode_night_outlined
+                            : Icons.wb_sunny_outlined,
+                        size: 30,
+                        color: screen_mode == Colors.white
+                            ? Colors.blueGrey
+                            : Colors.white,
+                      ))),
               side_menu,
-              report_bug,
             ],
           )),
     );

@@ -16,15 +16,29 @@ void main() async {
 }
 
 //class for the main app
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+  static _MyAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_MyAppState>();
+}
+
+class _MyAppState extends State<MyApp> {
   //creating routes for user navigation
   final routes = <String, WidgetBuilder>{
     RegisterPage.tag: (context) => RegisterPage(),
   };
 
   final _scaffold_key = GlobalKey<ScaffoldMessengerState>();
+  var _user_theme = Colors.deepOrange;
+  void changeTheme(var theme) {
+    setState(() {
+      _user_theme = theme;
+    });
+  }
 
   //main build method for the application
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -35,14 +49,15 @@ class MyApp extends StatelessWidget {
         )
       ],
       child: MaterialApp(
+        title: 'AFT Arabia',
         scaffoldMessengerKey: _scaffold_key,
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          primarySwatch: Colors.deepOrange,
+          primarySwatch: _user_theme,
           fontFamily: 'Nunito',
         ),
 
-        //start at the login page
+        //start at the login page or home page
         home: Wrapper(),
         routes: routes,
       ),
