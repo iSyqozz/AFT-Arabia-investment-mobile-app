@@ -11,6 +11,7 @@ class ProfileEditPage extends StatefulWidget {
   String number;
   Color screen_mode;
   String pfp_url;
+  String user_theme;
 
   ProfileEditPage({
     super.key,
@@ -19,6 +20,7 @@ class ProfileEditPage extends StatefulWidget {
     this.number = '',
     required this.screen_mode,
     required this.pfp_url,
+    required this.user_theme,
   });
   _ProfileEditPage createState() => new _ProfileEditPage();
 }
@@ -40,6 +42,11 @@ class _ProfileEditPage extends State<ProfileEditPage>
   Map<Color, Color> screen_mode_map = {
     Colors.white: Colors.black,
     Color.fromARGB(66, 78, 74, 74): Colors.white,
+  };
+  Map<String, List<Color>> theme_map = {
+    'orange': [Colors.deepOrangeAccent, Colors.deepOrange],
+    'purple': [Color.fromARGB(255, 40, 21, 92), Color.fromARGB(255, 29, 7, 66)],
+    'teal': [Colors.teal, Color.fromARGB(255, 1, 92, 83)],
   };
 
   @override
@@ -162,7 +169,7 @@ class _ProfileEditPage extends State<ProfileEditPage>
                 borderRadius: BorderRadius.circular(24),
               ),
               padding: EdgeInsets.all(12),
-              backgroundColor: Colors.deepOrangeAccent),
+              backgroundColor: theme_map[widget.user_theme]![0]),
           child: Text('Save', style: TextStyle(color: Colors.white)),
           onPressed: () async {
             if (_formkey.currentState!.validate()) {
@@ -171,7 +178,8 @@ class _ProfileEditPage extends State<ProfileEditPage>
                       first_name_controller.text,
                       second_name_controller.text,
                       number_controller.text,
-                      widget.pfp_url);
+                      widget.pfp_url,
+                      widget.user_theme);
               if (res != null) {
                 widget.name1 = first_name_controller.text;
                 widget.name2 = second_name_controller.text;
@@ -208,7 +216,7 @@ class _ProfileEditPage extends State<ProfileEditPage>
                 borderRadius: BorderRadius.circular(24),
               ),
               padding: EdgeInsets.all(12),
-              backgroundColor: Colors.deepOrangeAccent),
+              backgroundColor: theme_map[widget.user_theme]![0]),
           child: Text('Return', style: TextStyle(color: Colors.white)),
           onPressed: () {
             final List<String> res = [

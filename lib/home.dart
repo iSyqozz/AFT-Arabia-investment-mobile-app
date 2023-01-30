@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:aft_arabia/main.dart';
+import 'package:aft_arabia/shares.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'security-page.dart';
 import 'package:aft_arabia/services/auth.dart';
@@ -11,6 +14,7 @@ import 'contact_page.dart';
 import 'services/database.dart';
 import 'utils/transition.dart';
 import 'profile_page.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -29,13 +33,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final _formkey = GlobalKey<FormState>();
   String snackbar_content = 'Bug Form Submitted Succesfully!';
   MaterialColor snackbar_col = Colors.teal;
+  bool is_loaded = false;
+  bool loading_ind_finish = false;
+  bool home_initialized = false;
+  bool big_loading_ind = true;
 
   String display_name = '---';
   String pfp_url = '';
   String display_second_name = '---';
   String? curr_user_id = '---';
   String number = '---';
-  String user_theme = '---';
+  String user_theme = 'orange';
+  int share_count = 0;
+  double profit = 0;
+  Iterable shares_data = Iterable.empty();
+  int shares_val = 0;
 
   ImageProvider profile_pic =
       Image.asset('lib/images/pfp-placeholder.jpg').image;
@@ -81,39 +93,69 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
-  void set_display_name(String? uid) async {
+  Future<void> set_details(String? uid, BuildContext context) async {
     print('setting name...');
-    final temp = DatabaseService().fetch_data(uid);
-    temp.get().then((value) {
-      final temp = value.data() as Map<String, dynamic>;
-      setState(() {
-        try {
-          display_name = temp['name'];
-          display_second_name = temp['second name'];
-          number = temp['number'];
-          curr_user_id = uid;
-          profile_pic = temp['Profile Photo'] == ''
-              ? Image.asset(
-                  'lib/images/pfp-placeholder.jpg',
-                  fit: BoxFit.contain,
-                ).image
-              : Image.network(temp['Profile Photo']).image;
-          pfp_url = temp['Profile Photo'];
-          user_theme = temp['user theme'];
-          MaterialColor new_theme;
+    final temp = await DatabaseService().fetch_data(uid);
+    final data = await temp.get();
+    final map = await data.data() as Map<String, dynamic>;
+    QuerySnapshot user_shares = await FirebaseFirestore.instance
+        .collection('User Data')
+        .doc(uid as String)
+        .collection('shares')
+        .get();
+    shares_data = user_shares.docs.map((doc) => doc.data());
 
-          if (user_theme == 'orange') {
-            new_theme = Colors.deepOrange;
-          } else if (user_theme == 'teal')
-            new_theme = Colors.teal;
-          else {
-            new_theme = Colors.deepPurple;
-          }
-          MyApp.of(context)?.changeTheme(new_theme);
-        } catch (e) {
-          print(e.toString());
-        }
-      });
+    //getting share count and Profit
+    for (var v in shares_data) {
+      profit += double.parse(v['current profit']);
+      share_count += 1;
+    }
+    shares_val = share_count * 50000;
+
+    print(share_count);
+    setState(() {
+      try {
+        display_name = map['name'];
+        display_second_name = map['second name'];
+        number = map['number'];
+        curr_user_id = uid;
+        profile_pic = map['Profile Photo'] == ''
+            ? Image.asset(
+                'lib/images/pfp-placeholder.jpg',
+                fit: BoxFit.contain,
+              ).image
+            : Image.network(map['Profile Photo']).image;
+        pfp_url = map['Profile Photo'];
+        user_theme = map['user theme'];
+        home_initialized = true;
+      } catch (e) {
+        print(e.toString());
+      }
+    });
+    ;
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await set_details(curr_user_id, context);
+      Timer mytimer = Timer(Duration(milliseconds: 2000), (() {
+        setState(() {
+          big_loading_ind = false;
+        });
+        Timer mytimer = Timer(Duration(milliseconds: 300), (() {
+          setState(() {
+            is_loaded = true;
+          });
+          Timer mytimer = Timer(Duration(milliseconds: 2500), (() {
+            setState(() {
+              loading_ind_finish = true;
+            });
+          }));
+        }));
+      }));
     });
   }
 
@@ -127,9 +169,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final user = Provider.of<User?>(context);
     print(user);
 
-    if (user != null && user.uid != curr_user_id) {
-      set_display_name(user.uid);
-    }
+    curr_user_id = user?.uid;
 
     final succes_prompt = SnackBar(
       content: Text(
@@ -323,12 +363,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(24),
                     ),
                     padding: EdgeInsets.fromLTRB(30, 12, 30, 10),
-                    backgroundColor: Colors.red),
+                    backgroundColor: Color.fromARGB(255, 129, 22, 15)),
                 child: Text('Sign Out',
                     style: TextStyle(color: Colors.white, fontSize: 13)),
                 onPressed: () async {
-                  await Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => Transition()));
+                  await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => Transition(
+                            user_theme: user_theme,
+                          )));
                   remove(icon_controller);
 
                   await _auth.signOut();
@@ -357,8 +399,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: Text('Account',
                     style: TextStyle(color: Colors.white, fontSize: 13)),
                 onPressed: () async {
-                  await Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => Transition()));
+                  await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => Transition(
+                            user_theme: user_theme,
+                          )));
                   List<dynamic> new_info = await Navigator.push(
                     context,
                     PageRouteBuilder(
@@ -373,6 +417,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           home_file_path: profile_pic,
                           screen_mode: screen_mode,
                           pfp_url: pfp_url,
+                          user_theme: user_theme,
                         );
                       },
                       transitionDuration: Duration.zero,
@@ -385,6 +430,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     number = new_info[2];
                     profile_pic = new_info[3];
                     pfp_url = new_info[4];
+                    user_theme = new_info[5];
                   });
                 }),
           ),
@@ -410,8 +456,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: Text('Security',
                     style: TextStyle(color: Colors.white, fontSize: 13)),
                 onPressed: () async {
-                  await Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => Transition()));
+                  await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => Transition(
+                            user_theme: user_theme,
+                          )));
                   Navigator.push(
                     context,
                     PageRouteBuilder(
@@ -465,15 +513,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 5),
             child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    padding: EdgeInsets.fromLTRB(30, 12, 30, 10),
-                    backgroundColor: theme_map[user_theme]?[1]),
-                child: Text('AFT Bank',
-                    style: TextStyle(color: Colors.white, fontSize: 13)),
-                onPressed: () {}),
+              style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  padding: EdgeInsets.fromLTRB(30, 12, 30, 10),
+                  backgroundColor: theme_map[user_theme]?[1]),
+              child: Text('AFT Bank',
+                  style: TextStyle(color: Colors.white, fontSize: 13)),
+              onPressed: () async {
+                await Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => Transition(
+                          user_theme: user_theme,
+                        )));
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (BuildContext context,
+                        Animation<double> animation1,
+                        Animation<double> animation2) {
+                      return SharesPage(
+                        user_theme: user_theme,
+                        screen_mode: screen_mode,
+                        shares_data: shares_data,
+                        is_valid: share_count != 0,
+                      );
+                    },
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -497,8 +568,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: Text('Contact Us',
                     style: TextStyle(color: Colors.white, fontSize: 12)),
                 onPressed: () async {
-                  await Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => Transition()));
+                  await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => Transition(
+                            user_theme: user_theme,
+                          )));
                   Navigator.push(
                     context,
                     PageRouteBuilder(
@@ -587,100 +660,350 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
     );
 
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).requestFocus(new FocusNode());
-      },
-      child: Scaffold(
-          backgroundColor: screen_mode,
-          floatingActionButton: report_bug,
-          appBar: AppBar(
-            toolbarHeight: 45,
-            backgroundColor: theme_map[user_theme]?[0],
-            leading: menu_button,
-            actions: [
-              Row(children: [
-                Text(
-                  display_name,
-                  style: TextStyle(
-                      fontSize: (display_name + display_second_name).length > 26
-                          ? 11
-                          : 15,
-                      color: Colors.white),
+    final screen_mode_logo_and_beta = Align(
+        alignment: Alignment.topRight,
+        child: AnimatedOpacity(
+          duration: Duration(milliseconds: 500),
+          opacity: is_loaded ? 0.6 : 0,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Beta',
+                style: TextStyle(
+                    fontFamily: 'Arial',
+                    fontFamilyFallback: <String>[
+                      'Noto Sans CJK SC',
+                      'Noto Color Emoji',
+                    ],
+                    fontStyle: FontStyle.italic,
+                    color: screen_mode_map[screen_mode]),
+              ),
+              IconButton(
+                  onPressed: change_screen_mode,
+                  icon: Icon(
+                    screen_mode == Colors.white
+                        ? Icons.mode_night_outlined
+                        : Icons.wb_sunny_outlined,
+                    size: 30,
+                    color: screen_mode == Colors.white
+                        ? Colors.blueGrey
+                        : Colors.white,
+                  )),
+            ],
+          ),
+        ));
+
+    Widget title_left(data) => AnimatedOpacity(
+          duration: Duration(milliseconds: 800),
+          opacity: is_loaded ? 1 : 0,
+          curve: Curves.fastOutSlowIn,
+          child: AnimatedPadding(
+            padding: EdgeInsets.only(right: is_loaded ? 3 : 30),
+            duration: Duration(milliseconds: 500),
+            curve: Curves.fastOutSlowIn,
+            child: (Text(data,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 30,
+                  color: screen_mode_map[screen_mode],
+                ))),
+          ),
+        );
+
+    Widget title_right(data) => AnimatedOpacity(
+          duration: Duration(milliseconds: 800),
+          opacity: is_loaded ? 1 : 0,
+          curve: Curves.fastOutSlowIn,
+          child: AnimatedPadding(
+            padding: EdgeInsets.only(left: is_loaded ? 3 : 30),
+            duration: Duration(milliseconds: 500),
+            curve: Curves.fastOutSlowIn,
+            child: (Text(data,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 30,
+                  color: screen_mode_map[screen_mode],
+                ))),
+          ),
+        );
+
+    final loading_circle = Center(
+      child: Visibility(
+        visible: is_loaded,
+        child: Container(
+          height: 50,
+          width: 50,
+          child: LoadingIndicator(
+              strokeWidth: 3,
+              colors: [theme_map[user_theme]?[0] as Color],
+              indicatorType: Indicator.circleStrokeSpin),
+        ),
+      ),
+    );
+
+    final coming_soon = Center(
+        child: Container(
+      child: Text(
+        'Coming Soon!',
+        style: TextStyle(fontSize: 23, color: theme_map[user_theme]?[0]),
+      ),
+    ));
+
+    final init_ind = Center(
+      child: Visibility(
+        visible: big_loading_ind,
+        child: Container(
+          height: 200,
+          width: 200,
+          child: LoadingIndicator(
+              strokeWidth: 5,
+              colors: [Colors.blueGrey],
+              indicatorType: Indicator.circleStrokeSpin),
+        ),
+      ),
+    );
+
+    final bank_ind = share_count == 0
+        ? Center(
+            child: Container(
+            child: Text(
+              'No Active Shares!',
+              style: TextStyle(fontSize: 23, color: theme_map[user_theme]?[0]),
+            ),
+          ))
+        : Center(
+            child: Column(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                    color: theme_map[user_theme]![0],
+                    borderRadius: BorderRadius.all(Radius.circular(30))),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Active Shares: ${share_count} (${shares_val} DZD)',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Total Profit: ',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          Text(
+                            '${profit}',
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 69, 247, 69)),
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                SizedBox(
-                  width: 5,
-                ),
-                Text(
-                  display_second_name,
-                  style: TextStyle(
-                      fontSize: (display_name + display_second_name).length > 20
-                          ? 11
-                          : 15,
-                      color: Colors.white),
-                ),
-              ]),
+              ),
               SizedBox(
-                width: 6,
+                height: 10,
               ),
               GestureDetector(
                 onTap: () async {
-                  await Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => Transition()));
-                  List<dynamic> new_info = await Navigator.push(
+                  await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => Transition(
+                            user_theme: user_theme,
+                          )));
+                  Navigator.push(
                     context,
                     PageRouteBuilder(
                       pageBuilder: (BuildContext context,
                           Animation<double> animation1,
                           Animation<double> animation2) {
-                        return ProfilePage(
-                          number: number,
-                          name1: display_name,
-                          name2: display_second_name,
-                          current_uid: user?.uid as String,
-                          home_file_path: profile_pic,
+                        return SharesPage(
+                          user_theme: user_theme,
                           screen_mode: screen_mode,
-                          pfp_url: pfp_url,
+                          shares_data: shares_data,
+                          is_valid: share_count != 0,
                         );
                       },
                       transitionDuration: Duration.zero,
                       reverseTransitionDuration: Duration.zero,
                     ),
                   );
-                  setState(() {
-                    display_name = new_info[0];
-                    display_second_name = new_info[1];
-                    number = new_info[2];
-                    profile_pic = new_info[3];
-                    pfp_url = new_info[4];
-                  });
                 },
-                child: CircleAvatar(radius: 16, backgroundImage: profile_pic),
+                child: Container(
+                    decoration: BoxDecoration(
+                        color: theme_map[user_theme]![0],
+                        borderRadius: BorderRadius.all(Radius.circular(30))),
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(12, 12, 12, 0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Go To AFT Bank\nDashboard',
+                            style: TextStyle(color: Colors.white),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(
+                            height: 3,
+                          ),
+                          Icon(
+                            Icons.keyboard_arrow_up_rounded,
+                            color: Colors.white,
+                          )
+                        ],
+                      ),
+                    )),
               ),
-              SizedBox(
-                width: 5,
-              )
             ],
-          ),
-          body: Stack(
-            children: <Widget>[
-              background_logo,
-              Align(
-                  alignment: Alignment.topRight,
-                  child: IconButton(
-                      onPressed: change_screen_mode,
-                      icon: Icon(
-                        screen_mode == Colors.white
-                            ? Icons.mode_night_outlined
-                            : Icons.wb_sunny_outlined,
-                        size: 30,
-                        color: screen_mode == Colors.white
-                            ? Colors.blueGrey
-                            : Colors.white,
-                      ))),
-              side_menu,
-            ],
-          )),
-    );
+          ));
+
+    return !home_initialized
+        ? SpinKitCubeGrid(color: Colors.deepOrange)
+        : GestureDetector(
+            onTap: () {
+              FocusScope.of(context).requestFocus(new FocusNode());
+            },
+            child: Scaffold(
+                backgroundColor: screen_mode,
+                floatingActionButton: report_bug,
+                appBar: AppBar(
+                  toolbarHeight: 45,
+                  backgroundColor: theme_map[user_theme]?[0],
+                  leading: menu_button,
+                  actions: [
+                    Row(children: [
+                      Text(
+                        display_name,
+                        style: TextStyle(
+                            fontSize:
+                                (display_name + display_second_name).length > 26
+                                    ? 11
+                                    : 15,
+                            color: Colors.white),
+                      ),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                        display_second_name,
+                        style: TextStyle(
+                            fontSize:
+                                (display_name + display_second_name).length > 20
+                                    ? 11
+                                    : 15,
+                            color: Colors.white),
+                      ),
+                    ]),
+                    SizedBox(
+                      width: 6,
+                    ),
+                    GestureDetector(
+                      onTap: () async {
+                        await Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => Transition(
+                                  user_theme: user_theme,
+                                )));
+                        List<dynamic> new_info = await Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (BuildContext context,
+                                Animation<double> animation1,
+                                Animation<double> animation2) {
+                              return ProfilePage(
+                                number: number,
+                                name1: display_name,
+                                name2: display_second_name,
+                                current_uid: user?.uid as String,
+                                home_file_path: profile_pic,
+                                screen_mode: screen_mode,
+                                pfp_url: pfp_url,
+                                user_theme: user_theme,
+                              );
+                            },
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero,
+                          ),
+                        );
+                        setState(() {
+                          display_name = new_info[0];
+                          display_second_name = new_info[1];
+                          number = new_info[2];
+                          profile_pic = new_info[3];
+                          pfp_url = new_info[4];
+                          user_theme = new_info[5];
+                        });
+                        MaterialColor new_theme;
+                      },
+                      child: CircleAvatar(
+                          radius: 16, backgroundImage: profile_pic),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    )
+                  ],
+                ),
+                body: Stack(
+                  children: <Widget>[
+                    background_logo,
+                    big_loading_ind
+                        ? init_ind
+                        : ListView(children: [
+                            screen_mode_logo_and_beta,
+                            SizedBox(height: 10),
+                            Center(
+                                child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                title_left('AFT'),
+                                title_right('News')
+                              ],
+                            )),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            loading_ind_finish ? coming_soon : loading_circle,
+                            SizedBox(
+                              height: 80,
+                            ),
+                            Center(
+                                child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                title_left('Trending'),
+                                title_right('Products')
+                              ],
+                            )),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            loading_ind_finish ? coming_soon : loading_circle,
+                            SizedBox(
+                              height: 80,
+                            ),
+                            Center(
+                                child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [title_left('My'), title_right('Bank')],
+                            )),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            loading_ind_finish ? bank_ind : loading_circle,
+                          ]),
+                    side_menu,
+                  ],
+                )),
+          );
   }
 }

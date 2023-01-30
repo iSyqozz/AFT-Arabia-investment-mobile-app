@@ -71,8 +71,10 @@ class _VerifyPageState extends State<VerifyPage> {
               style: TextStyle(color: Colors.white, fontSize: 13)),
           onPressed: () async {
             await auth_inter.signOut();
-            await Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => Transition()));
+            await Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => Transition(
+                      user_theme: 'orange',
+                    )));
             timer.cancel();
             Navigator.pop(context);
           }),

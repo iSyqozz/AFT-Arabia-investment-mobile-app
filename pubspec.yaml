@@ -47,6 +47,7 @@ dependencies:
   image_cropper: ^3.0.1
   image_picker: ^0.8.6+1
   modal_bottom_sheet: ^2.1.2
+  loading_indicator: ^3.1.0
 
 dev_dependencies:
     
@@ -229,6 +230,7 @@ flutter:
   assets:
     - lib/images/
     - assets/logo_splash.png
+    - lib/images/coming _soon.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

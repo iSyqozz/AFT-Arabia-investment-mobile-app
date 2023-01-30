@@ -220,8 +220,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 backgroundColor: Colors.deepOrangeAccent),
             child: Text('Register', style: TextStyle(color: Colors.white)),
             onPressed: () async {
-              await Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => Transition()));
+              await Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => Transition(
+                        user_theme: 'orange',
+                      )));
               Navigator.push(
                 context,
                 PageRouteBuilder(
@@ -270,8 +272,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         ),
         GestureDetector(
           onTap: () async {
-            await Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => Transition()));
+            await Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => Transition(
+                      user_theme: 'orange',
+                    )));
             Navigator.push(
               context,
               PageRouteBuilder(

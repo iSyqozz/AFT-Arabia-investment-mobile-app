@@ -246,11 +246,13 @@ class _RegisterPageState extends State<RegisterPage>
               await Future.delayed(Duration(seconds: 1));
 
               dynamic res = await _register_checker.SignUp(
-                  first_name_controller.text,
-                  second_name_controller.text,
-                  number_controller.text,
-                  email_controller.text,
-                  password_controller.text);
+                first_name_controller.text,
+                second_name_controller.text,
+                number_controller.text,
+                email_controller.text,
+                password_controller.text,
+                'orange',
+              );
               if (res == null) {
                 setState(() {
                   in_use = 'Check Internet Connection';

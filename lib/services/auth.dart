@@ -92,13 +92,13 @@ class AuthService {
 
   //register with email and password
   Future SignUp(String name, String second_name, String number, String email,
-      String pwd) async {
+      String pwd, String theme) async {
     try {
       var result = await auth.createUserWithEmailAndPassword(
           email: email, password: pwd);
       var user = result.user;
       await DatabaseService(uid: user?.uid)
-          .update_user_data(name, second_name, number, '');
+          .update_user_data(name, second_name, number, '', theme);
       return _get_user_id(user);
     } catch (e) {
       print(e.toString());

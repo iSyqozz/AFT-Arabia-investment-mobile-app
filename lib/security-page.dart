@@ -49,8 +49,10 @@ class _SecurityPageState extends State<SecurityPage> {
 
     final email_option = GestureDetector(
       onTap: () async {
-        await Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => Transition()));
+        await Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => Transition(
+                  user_theme: widget.user_theme,
+                )));
         Navigator.push(
           context,
           PageRouteBuilder(
@@ -103,8 +105,10 @@ class _SecurityPageState extends State<SecurityPage> {
 
     final pass_option = GestureDetector(
       onTap: () async {
-        await Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => Transition()));
+        await Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => Transition(
+                  user_theme: widget.user_theme,
+                )));
         Navigator.push(
           context,
           PageRouteBuilder(

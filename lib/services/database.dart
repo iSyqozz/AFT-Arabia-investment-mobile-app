@@ -13,14 +13,15 @@ class DatabaseService {
     return temp;
   }
 
-  Future<bool> update_profile_photo(
-      String name, String second_name, String number, String path) async {
+  Future<bool> update_profile_photo(String name, String second_name,
+      String number, String path, String theme) async {
     try {
       final res = await user_collection.doc(uid).set({
         'name': name,
         'second name': second_name,
         'number': number,
-        'Profile Photo': path
+        'Profile Photo': path,
+        'user theme': theme
       });
       return true;
     } catch (e) {
@@ -29,18 +30,15 @@ class DatabaseService {
     }
   }
 
-  Future update_user_data(
-    String name,
-    String second_name,
-    String number,
-    String profile_photo_link,
-  ) async {
+  Future update_user_data(String name, String second_name, String number,
+      String profile_photo_link, String theme) async {
     try {
       final res = await user_collection.doc(uid).set({
         'name': name,
         'second name': second_name,
         'number': number,
-        'Profile Photo': profile_photo_link
+        'Profile Photo': profile_photo_link,
+        'user theme': theme
       });
       return true;
     } catch (e) {

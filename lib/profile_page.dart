@@ -22,6 +22,7 @@ class ProfilePage extends StatefulWidget {
   Color screen_mode;
   ImageProvider home_file_path;
   String pfp_url;
+  String user_theme;
   ProfilePage({
     super.key,
     required this.name1,
@@ -31,6 +32,7 @@ class ProfilePage extends StatefulWidget {
     required this.home_file_path,
     required this.screen_mode,
     required this.pfp_url,
+    required this.user_theme,
   });
 
   @override
@@ -69,6 +71,11 @@ class _ProfilePageState extends State<ProfilePage> {
   Map<Color, Color> screen_mode_map = {
     Colors.white: Colors.black,
     Color.fromARGB(66, 78, 74, 74): Colors.white,
+  };
+  Map<String, List<Color>> theme_map = {
+    'orange': [Colors.deepOrangeAccent, Colors.deepOrange],
+    'purple': [Color.fromARGB(255, 40, 21, 92), Color.fromARGB(255, 29, 7, 66)],
+    'teal': [Colors.teal, Color.fromARGB(255, 1, 92, 83)],
   };
 
   //page initial animations
@@ -115,10 +122,44 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  void set_theme(String theme) async {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => Container(
+                child: SpinKitCubeGrid(
+              color: theme_map[widget.user_theme]![0],
+              duration: Duration(milliseconds: 1000),
+            ))));
+    final res = await DatabaseService(uid: widget.current_uid).update_user_data(
+        widget.name1, widget.name2, widget.number, widget.pfp_url, theme);
+    Navigator.of(context).pop();
+    print(res);
+    if (res == true) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          'Done!',
+          textAlign: TextAlign.center,
+        ),
+        backgroundColor: Colors.teal,
+      ));
+      setState(() {
+        widget.user_theme = theme;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          'Error while setting theme',
+          textAlign: TextAlign.center,
+        ),
+        backgroundColor: Colors.red,
+      ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     print(widget.current_uid);
     print(widget.pfp_url);
+    print(widget.user_theme);
     this.scr_width = MediaQuery.of(context).size.width;
     final back_arrow = GestureDetector(
       onTap: () {
@@ -128,6 +169,7 @@ class _ProfilePageState extends State<ProfilePage> {
           widget.number,
           widget.home_file_path,
           widget.pfp_url,
+          widget.user_theme,
         ];
 
         Navigator.pop(context, res);
@@ -207,7 +249,7 @@ class _ProfilePageState extends State<ProfilePage> {
         height: 30,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(30)),
-          border: Border.all(color: Colors.deepOrangeAccent, width: 3),
+          border: Border.all(color: theme_map[widget.user_theme]![0], width: 3),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
@@ -247,7 +289,7 @@ class _ProfilePageState extends State<ProfilePage> {
         height: 30,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(30)),
-          border: Border.all(color: Colors.deepOrangeAccent, width: 3),
+          border: Border.all(color: theme_map[widget.user_theme]![0], width: 3),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
@@ -286,7 +328,7 @@ class _ProfilePageState extends State<ProfilePage> {
         height: 30,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(30)),
-          border: Border.all(color: Colors.deepOrangeAccent, width: 3),
+          border: Border.all(color: theme_map[widget.user_theme]![0], width: 3),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
@@ -324,7 +366,7 @@ class _ProfilePageState extends State<ProfilePage> {
         height: 30,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(30)),
-          border: Border.all(color: Colors.deepOrangeAccent, width: 3),
+          border: Border.all(color: theme_map[widget.user_theme]![0], width: 3),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
@@ -363,7 +405,7 @@ class _ProfilePageState extends State<ProfilePage> {
         height: 30,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(30)),
-          border: Border.all(color: Colors.deepOrangeAccent, width: 3),
+          border: Border.all(color: theme_map[widget.user_theme]![0], width: 3),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
@@ -462,8 +504,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
     final change_email_button = GestureDetector(
       onTap: () async {
-        await Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => Transition()));
+        await Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => Transition(
+                  user_theme: widget.user_theme,
+                )));
         Navigator.push(
           context,
           PageRouteBuilder(
@@ -471,7 +515,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Animation<double> animation2) {
               return ChangeEmail(
                 screen_mode: widget.screen_mode,
-                user_theme: '',
+                user_theme: widget.user_theme,
               );
             },
             transitionDuration: Duration.zero,
@@ -491,7 +535,8 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
               border: Border.all(
-                  color: Colors.deepOrangeAccent, style: BorderStyle.solid),
+                  color: theme_map[widget.user_theme]![0],
+                  style: BorderStyle.solid),
               borderRadius: BorderRadius.circular(40),
             ),
             child: Row(
@@ -518,8 +563,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
     final edit_personal_info = GestureDetector(
       onTap: () async {
-        await Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => Transition()));
+        await Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => Transition(
+                  user_theme: widget.user_theme,
+                )));
         List<String> new_info = await Navigator.push(
           context,
           PageRouteBuilder(
@@ -531,6 +578,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 number: widget.number,
                 screen_mode: widget.screen_mode,
                 pfp_url: widget.pfp_url,
+                user_theme: widget.user_theme,
               );
             },
             transitionDuration: Duration.zero,
@@ -555,7 +603,8 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
               border: Border.all(
-                  color: Colors.deepOrangeAccent, style: BorderStyle.solid),
+                  color: theme_map[widget.user_theme]![0],
+                  style: BorderStyle.solid),
               borderRadius: BorderRadius.circular(40),
             ),
             child: Row(
@@ -567,6 +616,114 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 Text(
                   'Edit Profile Info',
+                  style: TextStyle(
+                      color: screen_mode_map[widget.screen_mode], fontSize: 13),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final change_theme = GestureDetector(
+      onTap: (() {
+        showModalBottomSheet(
+            context: context,
+            builder: (context) {
+              return Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                ListTile(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    set_theme('purple');
+                  },
+                  tileColor: widget.screen_mode == Colors.white
+                      ? Colors.white
+                      : Colors.black87,
+                  iconColor: Color.fromARGB(255, 29, 7, 66),
+                  leading: new Icon(Icons.circle),
+                  trailing: widget.user_theme == 'purple'
+                      ? Icon(Icons.check,
+                          color: screen_mode_map[widget.screen_mode])
+                      : SizedBox(
+                          width: 1,
+                        ),
+                  title: new Text('Deep Purple',
+                      style: TextStyle(
+                          color: screen_mode_map[widget.screen_mode])),
+                ),
+                ListTile(
+                  onTap: () {
+                    Navigator.of(context).pop();
+
+                    set_theme('orange');
+                  },
+                  tileColor: widget.screen_mode == Colors.white
+                      ? Colors.white
+                      : Colors.black87,
+                  iconColor: Colors.deepOrange,
+                  leading: new Icon(Icons.circle),
+                  trailing: widget.user_theme == 'orange'
+                      ? Icon(Icons.check,
+                          color: screen_mode_map[widget.screen_mode])
+                      : SizedBox(
+                          width: 1,
+                        ),
+                  title: new Text('Deep Orange',
+                      style: TextStyle(
+                          color: screen_mode_map[widget.screen_mode])),
+                ),
+                ListTile(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    set_theme('teal');
+                  },
+                  tileColor: widget.screen_mode == Colors.white
+                      ? Colors.white
+                      : Colors.black87,
+                  iconColor: Colors.teal,
+                  trailing: widget.user_theme == 'teal'
+                      ? Icon(Icons.check,
+                          color: screen_mode_map[widget.screen_mode])
+                      : SizedBox(
+                          width: 1,
+                        ),
+                  leading: new Icon(Icons.circle),
+                  title: new Text('Teal',
+                      style: TextStyle(
+                          color: screen_mode_map[widget.screen_mode])),
+                ),
+              ]);
+            });
+      }),
+      child: AnimatedPadding(
+        duration: Duration(milliseconds: 100),
+        padding: EdgeInsets.only(right: button_offset),
+        child: AnimatedOpacity(
+          opacity: buttons_opacity ? 1 : 0,
+          curve: Curves.fastOutSlowIn,
+          duration: Duration(milliseconds: 100),
+          child: Container(
+            width: scr_width / 1.8,
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              border: Border.all(
+                  color: theme_map[widget.user_theme]![0],
+                  style: BorderStyle.solid),
+              borderRadius: BorderRadius.circular(40),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.color_lens,
+                  color: screen_mode_map[widget.screen_mode],
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                Text(
+                  'Change Theme',
                   style: TextStyle(
                       color: screen_mode_map[widget.screen_mode], fontSize: 13),
                 )
@@ -593,7 +750,8 @@ class _ProfilePageState extends State<ProfilePage> {
               width: MediaQuery.of(context).size.width / 1.1,
               height: MediaQuery.of(context).size.height / 1.8,
               decoration: BoxDecoration(
-                  border: Border.all(color: Colors.deepOrangeAccent, width: 4),
+                  border: Border.all(
+                      color: theme_map[widget.user_theme]![0], width: 4),
                   borderRadius: BorderRadius.all(Radius.circular(60))),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -607,13 +765,17 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   info_col,
                   SizedBox(
-                    height: MediaQuery.of(context).size.height / 15,
+                    height: MediaQuery.of(context).size.height / 25,
                   ),
                   edit_personal_info,
                   SizedBox(
                     height: 5,
                   ),
                   change_email_button,
+                  SizedBox(
+                    height: 5,
+                  ),
+                  change_theme,
                 ],
               ),
             )),
@@ -656,7 +818,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => Container(
                                           child: SpinKitCubeGrid(
-                                        color: Colors.deepOrangeAccent,
+                                        color: theme_map[widget.user_theme]![0],
                                         duration: Duration(milliseconds: 1000),
                                       ))));
                               try {
@@ -679,7 +841,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                         widget.name1,
                                         widget.name2,
                                         widget.number,
-                                        image_url);
+                                        image_url,
+                                        widget.user_theme);
                                 Navigator.of(context).pop();
                                 if (res == false) {
                                   ScaffoldMessenger.of(context)
@@ -833,8 +996,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                                     },
                                                     child: Container(
                                                       decoration: BoxDecoration(
-                                                        color: Colors
-                                                            .deepOrangeAccent,
+                                                        color: theme_map[widget
+                                                            .user_theme]![1],
                                                         borderRadius:
                                                             BorderRadius.all(
                                                                 Radius.circular(
@@ -867,8 +1030,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                                     },
                                                     child: Container(
                                                       decoration: BoxDecoration(
-                                                        color: Colors
-                                                            .deepOrangeAccent,
+                                                        color: theme_map[widget
+                                                            .user_theme]![1],
                                                         borderRadius:
                                                             BorderRadius.all(
                                                                 Radius.circular(
@@ -957,7 +1120,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => Container(
                                     child: SpinKitCubeGrid(
-                                  color: Colors.deepOrangeAccent,
+                                  color: theme_map[widget.user_theme]![0],
                                   duration: Duration(milliseconds: 1000),
                                 ))));
                         try {
@@ -970,7 +1133,11 @@ class _ProfilePageState extends State<ProfilePage> {
                               .child(filepath);
                           await ref.delete();
                           bool res = await my_database.update_profile_photo(
-                              widget.name1, widget.name2, widget.number, '');
+                              widget.name1,
+                              widget.name2,
+                              widget.number,
+                              '',
+                              widget.user_theme);
                           Navigator.of(context).pop();
                           Navigator.of(context).pop();
 
@@ -1033,7 +1200,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     padding: const EdgeInsets.fromLTRB(0, 0, 10, 10),
                     child: Align(
                         alignment: Alignment.bottomRight,
-                        child: Icon(Icons.edit_outlined)),
+                        child: Icon(
+                          Icons.edit_outlined,
+                          color: Colors.white,
+                        )),
                   ),
                   radius: 90,
                   backgroundImage: widget.home_file_path),
@@ -1062,7 +1232,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           width: cover_width,
                           height: cover_hight,
                           decoration: BoxDecoration(
-                            color: Colors.deepOrangeAccent,
+                            color: theme_map[widget.user_theme]![0],
                             borderRadius: border_rad,
                           ),
                           duration: Duration(milliseconds: 400),
