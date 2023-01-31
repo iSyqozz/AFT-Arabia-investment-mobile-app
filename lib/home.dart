@@ -107,8 +107,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     //getting share count and Profit
     for (var v in shares_data) {
-      profit += double.parse(v['current profit']);
-      share_count += 1;
+      if (v['status'] == 'Active') {
+        profit += (double.parse(v['current profit'])) -
+            6300 * double.parse(v['dividends']);
+        share_count += 1;
+      }
     }
     shares_val = share_count * 50000;
 
@@ -535,7 +538,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       return SharesPage(
                         user_theme: user_theme,
                         screen_mode: screen_mode,
-                        shares_data: shares_data,
+                        shares_data: shares_data.toList(),
                         is_valid: share_count != 0,
                       );
                     },
@@ -829,7 +832,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         return SharesPage(
                           user_theme: user_theme,
                           screen_mode: screen_mode,
-                          shares_data: shares_data,
+                          shares_data: shares_data.toList(),
                           is_valid: share_count != 0,
                         );
                       },
