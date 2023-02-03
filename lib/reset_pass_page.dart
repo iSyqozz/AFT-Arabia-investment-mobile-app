@@ -103,7 +103,7 @@ class _ResetPassPageState extends State<ResetPassPage> {
               dynamic res =
                   await resetter.resetPassword(_email_controller.text.trim());
               if (res != null) {
-                print('sent!');
+                //print('sent!');
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: SingleChildScrollView(
                     child: Text(

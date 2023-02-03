@@ -52,7 +52,7 @@ class _ProfileEditPage extends State<ProfileEditPage>
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<User?>(context);
-    print(widget.pfp_url);
+    //print(widget.pfp_url);
 
     final title = Text(
       'Personal Info',

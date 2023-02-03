@@ -226,7 +226,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
                   pass_controller.text,
                   new_email_controller.text);
               if (res == true) {
-                print('succeeded');
+                //print('succeeded');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -242,7 +242,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
                 });
                 await _email_changer.signOut();
               } else if (res == 1) {
-                print('failed');
+                //print('failed');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -263,7 +263,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
                   ),
                 );
               } else {
-                print(res);
+                //print(res);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(

@@ -94,7 +94,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Future<void> set_details(String? uid, BuildContext context) async {
-    print('setting name...');
+    //print('setting name...');
     final temp = await DatabaseService().fetch_data(uid);
     final data = await temp.get();
     final map = await data.data() as Map<String, dynamic>;
@@ -107,15 +107,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     //getting share count and Profit
     for (var v in shares_data) {
+      //print('one share');
       if (v['status'] == 'Active') {
-        profit += (double.parse(v['current profit'])) -
-            6300 * double.parse(v['dividends']);
+        profit += (double.parse(v['currentprofit']));
         share_count += 1;
       }
     }
     shares_val = share_count * 50000;
 
-    print(share_count);
+    //print(share_count);
     setState(() {
       try {
         display_name = map['name'];
@@ -132,7 +132,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         user_theme = map['user theme'];
         home_initialized = true;
       } catch (e) {
-        print(e.toString());
+        //print(e.toString());
       }
     });
     ;
@@ -170,7 +170,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
 
     final user = Provider.of<User?>(context);
-    print(user);
+    //print(user);
 
     curr_user_id = user?.uid;
 
@@ -243,29 +243,43 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: Text('Submit', style: TextStyle(color: Colors.white)),
             onPressed: () async {
               if (_formkey.currentState!.validate()) {
-                final response =
-                    await http.post(Uri.parse('http://192.168.1.43:5000/email'),
-                        body: json.encode(<String, dynamic>{
-                          'subject': 'Bug Report',
-                          'email': 'Anon App User',
-                          'body': _bug_form_controller.text
-                        }));
-                print(response.statusCode);
-                if (response.statusCode == 200) {
-                  setState(() {
-                    snackbar_content = 'Bug Form Submitted Succesfully!';
-                    snackbar_col = Colors.teal;
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(succes_prompt);
-                  Future.delayed(Duration(seconds: 3));
-                  Navigator.pop(context);
-                } else {
-                  print('failed with $response.statuscode');
-                  setState(() {
-                    snackbar_content = 'Bug Form Submission Failed';
-                    snackbar_col = Colors.red;
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(succes_prompt);
+                try {
+                  final response = await http.post(
+                      Uri.parse(
+                          'https://plankton-app-iiabn.ondigitalocean.app/email'),
+                      body: json.encode(<String, dynamic>{
+                        'subject': 'Bug Report',
+                        'email': 'Anon App User',
+                        'body': _bug_form_controller.text
+                      }));
+                  //print(response.statusCode);
+                  if (response.statusCode == 200) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(
+                        'Submitted!',
+                        textAlign: TextAlign.center,
+                      ),
+                      backgroundColor: Colors.teal,
+                    ));
+                  } else {
+                    //print('failed with $response.statuscode');
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(
+                        'Failed!',
+                        textAlign: TextAlign.center,
+                      ),
+                      backgroundColor: Colors.red,
+                    ));
+                  }
+                } catch (e) {
+                  //print(e.toString());
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                      'Failed!',
+                      textAlign: TextAlign.center,
+                    ),
+                    backgroundColor: Colors.red,
+                  ));
                 }
               }
             }));
@@ -499,9 +513,35 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     padding: EdgeInsets.fromLTRB(30, 12, 30, 10),
                     backgroundColor: theme_map[user_theme]?[1]),
-                child: Text('About Us',
+                child: Text('Terms',
                     style: TextStyle(color: Colors.white, fontSize: 13)),
-                onPressed: () {}),
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                            backgroundColor: screen_mode,
+                            title: Center(
+                              child: Text(
+                                'terms and conditions',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: screen_mode_map[screen_mode]),
+                              ),
+                            ),
+                            content: Container(
+                              height: 300,
+                              width: 200,
+                              child: ListView(children: [
+                                Text(
+                                  '1- An appointment is committed to depositing an amount of fifty thousand Algerian dinars (50,000 DZD) oranother country as a shareholding in the capitalQuantum Healing Fund\n2- Image rights are property rights independent\n3- The shareholder gets a profit of 6300 DZD (or what is equivalent to this percentage if he is from a country Others, according to the amount of each share in agreement with the Corporation) for each share he owns, and that is every 45 days Since the beginning of its detailed filing in a pre-prepared schedule\n4- At the end of the agreement between the two parties after a year, the shareholder may obtain an estimated total profit At 50,400 Algerian dinars, with the return of his capital (50,000 DZD), which gives him a profitable interest that exceeds 100%. (Ratios apply to each shareholder from another country)\n5- The institution is committed to disbursing profits to the shareholder according to a prior schedule that is sent to the person concerned via The e-mail with a consideration period of ten days after the earnings accrual date in each cycle\n6- The shareholder obtains his profits through an agent approved by our institution or directly from the institution and bears the responsibility Expenses and services for that process\n7- New quota deposits will be accepted according to a schedule prepared in advance to specify the quota deposit dates And the disbursement of profits based on the financial reports of the institution\n8- Each share is considered independent in terms of the dates of deposit, dividend payment, termination or renewal\n9- The shareholder is obligated not to claim a refund of the stake(s) for a full year starting from the date of the share(s).\nThe first deposit, except for the most exceptional cases, which are determined within the framework of a follow-up committee that includes supervisors and agents.\n10- At the end of the year, the Foundation shall return the money deposited by the contributor in the form of sums of money or Products in the event that the contributor decides not to renew or decides not to renew it, within 60 days of The end date of the agreement\n11- The shareholder can transfer ownership of his shares to another party after reviewing the proxy and correspondence The institution that retains the final decision in acceptance or rejection. In case of acceptance, an email will be sent Canceling the agreement for the old shareholder and writing to the new shareholder with a new agreement that he signs and returns send it to the institution\n12- This agreement is completely independent of any other activities of the Foundation such as training courses or any other activities Other activity The profits do not include any additional amounts other than what was agreed upon in the third item\n13- The shareholder does not have any obligations towards the various activities of the Corporation, nor does he have the right In interfering with the workflow within it, regardless of the number of shares involved in the fund.\n14- The official means of communication is the email, where the contributor receives a detailed email containing all the data Quotas, dates of deposit and disbursement of profits at the beginning of his participation and at the end of each 45-day cycle At the end of the agreement or its renewal, and everything related to any developments, and any means of communication or communication shall not be considered another correspondence. The data in this application is considered official and a reference for follow-up and updating\n15- When the shareholder and the corporation agree to renew the shares after the end of the year, an agreement is drawn up new between them.',
+                                  style: TextStyle(
+                                      color: screen_mode_map[screen_mode]),
+                                ),
+                              ]),
+                            ));
+                      });
+                }),
           ),
         ),
       ),

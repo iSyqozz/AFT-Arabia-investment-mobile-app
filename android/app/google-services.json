@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:148021748774:android:6062a54511b7b73d0972e7",
+        "mobilesdk_app_id": "1:148021748774:android:3ee47182bd52ee9f0972e7",
         "android_client_info": {
-          "package_name": "com.example.cool_app"
+          "package_name": "com.aftarabia.aftapp"
         }
       },
       "oauth_client": [
@@ -31,10 +31,10 @@
               "client_type": 3
             },
             {
-              "client_id": "148021748774-mfucn0vmpp82q898mj0l1ce81fkaii7u.apps.googleusercontent.com",
+              "client_id": "148021748774-8uvmeqip79fchusasg4hlr7ckbla835j.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.coolApp"
+                "bundle_id": "com.aftarabia.aftapp"
               }
             }
           ]

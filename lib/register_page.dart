@@ -267,7 +267,7 @@ class _RegisterPageState extends State<RegisterPage>
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) => VerifyPage()));
                 dispose();
-                print(res.uid);
+                //print(res.uid);
                 return null;
               }
 

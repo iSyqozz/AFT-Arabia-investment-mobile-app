@@ -34,7 +34,7 @@ class _SecurityPageState extends State<SecurityPage> {
   void animate() {
     Timer my_timer = Timer(Duration(milliseconds: 100), () {
       setState(() {
-        print('worked');
+        //print('worked');
         _visible = true;
         _animated = true;
       });
@@ -185,36 +185,36 @@ class _SecurityPageState extends State<SecurityPage> {
 
     final delete_option = GestureDetector(
       onTap: () {
-        showDialog(
-            context: context,
-            builder: (context) {
-              return Padding(
-                padding: EdgeInsets.fromLTRB(0, 200, 0, 280),
-                child: AlertDialog(
-                    title: Text(
-                      'Are you sure that you want to delete yout account?',
-                      textAlign: TextAlign.center,
-                    ),
-                    content: Column(
-                      children: [
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Text(
-                          'This action is irreversible is',
-                          textAlign: TextAlign.center,
-                          style:
-                              TextStyle(color: Colors.blueGrey, fontSize: 12),
-                        ),
-                        continue_button,
-                        dismiss_button,
-                      ],
-                    )),
-              );
-            });
+        //showDialog(
+        //    context: context,
+        //    builder: (context) {
+        //      return Padding(
+        //        padding: EdgeInsets.fromLTRB(0, 200, 0, 280),
+        //        child: AlertDialog(
+        //            title: Text(
+        //              'Are you sure that you want to delete yout account?',
+        //              textAlign: TextAlign.center,
+        //            ),
+        //            content: Column(
+        //              children: [
+        //                SizedBox(
+        //                  height: 10,
+        //                ),
+        //                Text(
+        //                  'This action is irreversible is',
+        //                  textAlign: TextAlign.center,
+        //                  style:
+        //                      TextStyle(color: Colors.blueGrey, fontSize: 12),
+        //                ),
+        //                continue_button,
+        //                dismiss_button,
+        //              ],
+        //            )),
+        //      );
+        //    });
       },
       child: AnimatedOpacity(
-        opacity: _visible ? 1.0 : 0.0,
+        opacity: _visible ? 0.3 : 0.0,
         duration: Duration(milliseconds: 900),
         child: AnimatedAlign(
           curve: Curves.fastOutSlowIn,

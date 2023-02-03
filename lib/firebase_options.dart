@@ -17,7 +17,10 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -25,7 +28,10 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -43,18 +49,9 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCHsJXn_R2k4gAhvREsruxDQCB6pxIO3Gk',
-    appId: '1:148021748774:web:00e7a3c950d056c90972e7',
-    messagingSenderId: '148021748774',
-    projectId: 'aft-arabia',
-    authDomain: 'aft-arabia.firebaseapp.com',
-    storageBucket: 'aft-arabia.appspot.com',
-  );
-
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCHw3kBg05vxQCbhMiHyvsZYAqfZ-Z2G4M',
-    appId: '1:148021748774:android:6062a54511b7b73d0972e7',
+    appId: '1:148021748774:android:3ee47182bd52ee9f0972e7',
     messagingSenderId: '148021748774',
     projectId: 'aft-arabia',
     storageBucket: 'aft-arabia.appspot.com',
@@ -62,23 +59,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCa1C4tzfqD72k1XdEj52eVMEV-EaY0qRk',
-    appId: '1:148021748774:ios:123df43eeddab1980972e7',
+    appId: '1:148021748774:ios:bfd980fc363711570972e7',
     messagingSenderId: '148021748774',
     projectId: 'aft-arabia',
     storageBucket: 'aft-arabia.appspot.com',
-    iosClientId:
-        '148021748774-mfucn0vmpp82q898mj0l1ce81fkaii7u.apps.googleusercontent.com',
-    iosBundleId: 'com.example.coolApp',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCa1C4tzfqD72k1XdEj52eVMEV-EaY0qRk',
-    appId: '1:148021748774:ios:123df43eeddab1980972e7',
-    messagingSenderId: '148021748774',
-    projectId: 'aft-arabia',
-    storageBucket: 'aft-arabia.appspot.com',
-    iosClientId:
-        '148021748774-mfucn0vmpp82q898mj0l1ce81fkaii7u.apps.googleusercontent.com',
-    iosBundleId: 'com.example.coolApp',
+    iosClientId: '148021748774-8uvmeqip79fchusasg4hlr7ckbla835j.apps.googleusercontent.com',
+    iosBundleId: 'com.aftarabia.aftapp',
   );
 }

@@ -9,7 +9,7 @@ class DatabaseService {
 
   DocumentReference fetch_data(String? uid) {
     var temp = user_collection.doc(uid);
-    print(temp);
+    //print(temp);
     return temp;
   }
 
@@ -25,7 +25,7 @@ class DatabaseService {
       });
       return true;
     } catch (e) {
-      print(e.toString());
+      //print(e.toString());
       return false;
     }
   }
@@ -42,7 +42,7 @@ class DatabaseService {
       });
       return true;
     } catch (e) {
-      print(e.toString());
+      //print(e.toString());
       return null;
     }
     ;

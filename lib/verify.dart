@@ -93,7 +93,7 @@ class _VerifyPageState extends State<VerifyPage> {
           onPressed: () async {
             try {
               var res = await curr_user?.sendEmailVerification();
-              print('res');
+              //print('res');
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(
                   'Email sent!',
@@ -102,7 +102,7 @@ class _VerifyPageState extends State<VerifyPage> {
                 backgroundColor: Colors.teal,
               ));
             } catch (e) {
-              print(e.toString());
+              //print(e.toString());
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(
                   'Failed to send Emai, Try again later. ',

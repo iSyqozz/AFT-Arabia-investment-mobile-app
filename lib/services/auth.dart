@@ -28,7 +28,7 @@ class AuthService {
       final res1 = await auth.currentUser!.reauthenticateWithCredential(
           EmailAuthProvider.credential(email: email, password: pass));
     } catch (e) {
-      print(e.toString());
+      //print(e.toString());
       return 1;
     }
     try {
@@ -36,7 +36,7 @@ class AuthService {
       final res = await user!.verifyBeforeUpdateEmail(new_email);
       return true;
     } catch (e) {
-      print(e.toString());
+      //print(e.toString());
       if (e.toString() ==
           '[firebase_auth/email-already-in-use] The email address is already in use by another account.') {
         return 3;
@@ -51,15 +51,15 @@ class AuthService {
       var result =
           await auth.signInWithEmailAndPassword(email: email, password: pwd);
       var user = result.user;
-      print(result);
+      //print(result);
       return user;
     } catch (e) {
       String error = e.toString();
-      print([
-        '[firebaseauth/user-not-found] There is no user record corresponding to this identifier. The user may have been deleted.',
-        '[firebaseauth/wrong-password] The password is invalid or the user does not have a password.',
-        '[firebaseauth/invalid-email] The email address is badly formatted.'
-      ].contains(error));
+      //print([
+      //  '[firebaseauth/user-not-found] There is no user record corresponding to this identifier. The user may have been deleted.',
+      //  '[firebaseauth/wrong-password] The password is invalid or the user does not have a password.',
+      //  '[firebaseauth/invalid-email] The email address is badly formatted.'
+      //].contains(error));
       if (error.contains('formatted') ||
           error.contains('deleted') ||
           error.contains('invalid')) {
@@ -75,7 +75,7 @@ class AuthService {
       await auth.sendPasswordResetEmail(email: email);
       return 1;
     } catch (e) {
-      print(e.toString());
+      //print(e.toString());
       return null;
     }
   }
@@ -86,7 +86,7 @@ class AuthService {
     try {
       return await auth.signOut();
     } catch (e) {
-      print(e.toString());
+      //print(e.toString());
     }
   }
 
@@ -101,7 +101,7 @@ class AuthService {
           .update_user_data(name, second_name, number, '', theme);
       return _get_user_id(user);
     } catch (e) {
-      print(e.toString());
+      //print(e.toString());
       if (e.toString() ==
           '[firebase_auth/email-already-in-use] The email address is already in use by another account.') {
         return 1;

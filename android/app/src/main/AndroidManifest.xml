@@ -1,10 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.cool_app">
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    package="com.aftarabia.aftapp">
+    <uses-permission android:name="android.permission.INTERNET" />
    <application
-        android:label="cool_app"
+        android:label="AFT Arabia"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcherlogo">
         <activity
             android:name=".MainActivity"
             android:exported="true"

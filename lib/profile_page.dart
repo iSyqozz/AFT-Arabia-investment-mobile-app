@@ -132,7 +132,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final res = await DatabaseService(uid: widget.current_uid).update_user_data(
         widget.name1, widget.name2, widget.number, widget.pfp_url, theme);
     Navigator.of(context).pop();
-    print(res);
+    //print(res);
     if (res == true) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
@@ -157,9 +157,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.current_uid);
-    print(widget.pfp_url);
-    print(widget.user_theme);
+    //print(widget.current_uid);
+    //print(widget.pfp_url);
+    //print(widget.user_theme);
     this.scr_width = MediaQuery.of(context).size.width;
     final back_arrow = GestureDetector(
       onTap: () {
@@ -824,8 +824,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               try {
                                 DatabaseService my_database =
                                     DatabaseService(uid: widget.current_uid);
-                                print(
-                                    'upload started go and check the storage');
+                                //print(
+                                //    'upload started go and check the storage');
                                 String filepath =
                                     'Profile Pictures/${widget.current_uid}.png';
                                 _uploadTask = await storage_ref
@@ -853,8 +853,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                     backgroundColor: Colors.red,
                                   ));
-                                  print(
-                                      'adding download link to firestore failed');
+                                  //print(
+                                  //    'adding download link to firestore failed');
                                 } else {
                                   ScaffoldMessenger.of(context)
                                       .showSnackBar(SnackBar(
@@ -864,7 +864,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                     backgroundColor: Colors.teal,
                                   ));
-                                  print('upload susccessful');
+                                  //print('upload susccessful');
                                   Navigator.of(context).pop([
                                     FileImage(File(_imageFile.path)),
                                     image_url
@@ -879,7 +879,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                   backgroundColor: Colors.red,
                                 ));
-                                print(e.toString());
+                                //print(e.toString());
                               }
                             }
 
@@ -923,7 +923,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                           final temp =
                                                               await selected
                                                                   .length();
-                                                          print(temp);
+                                                          //print(temp);
                                                           if (temp > 2097152) {
                                                             ScaffoldMessenger
                                                                     .of(context)
@@ -1149,7 +1149,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               backgroundColor: Colors.red,
                             ));
-                            print('adding download link to firestore failed');
+                            //print('adding download link to firestore failed');
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text(
@@ -1165,10 +1165,10 @@ class _ProfilePageState extends State<ProfilePage> {
                               ).image;
                               widget.pfp_url = '';
                             });
-                            print('change susccessful');
+                            //print('change susccessful');
                           }
                         } catch (e) {
-                          print(e.toString());
+                          //print(e.toString());
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(
                               'Failed to Delete Profile Picture',

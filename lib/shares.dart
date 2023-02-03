@@ -56,8 +56,7 @@ class _SharesPageState extends State<SharesPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       for (var v in widget.shares_data) {
         if (v['status'] == 'Active') {
-          profit += (double.parse(v['current profit'])) -
-              6300 * double.parse(v['dividends']);
+          profit += (double.parse(v['currentprofit']));
           share_count += 1;
         } else {
           inactive_share_count += 1;
@@ -298,6 +297,8 @@ class _SharesPageState extends State<SharesPage> {
           height: 500,
           width: 300,
           child: ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: false,
             itemCount: widget.shares_data.length,
             itemBuilder: (context, index) {
               return ListTile(
@@ -317,7 +318,7 @@ class _SharesPageState extends State<SharesPage> {
                         color: Color.fromARGB(197, 255, 255, 255)),
                   ),
                 ),
-                title: Text('test'),
+                title: Text(''),
                 subtitle: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -347,7 +348,7 @@ class _SharesPageState extends State<SharesPage> {
                     Row(children: [
                       Text('Total Cycles: '),
                       Text(
-                        '${widget.shares_data[index]['total cycles']}',
+                        '${widget.shares_data[index]['totalcycles']}',
                         style: TextStyle(
                             color:
                                 widget.shares_data[index]['status'] == 'Active'
@@ -369,7 +370,7 @@ class _SharesPageState extends State<SharesPage> {
                     Row(children: [
                       Text('Profit: '),
                       Text(
-                        '${widget.shares_data[index]['current profit']}',
+                        '${widget.shares_data[index]['currentprofit']}',
                         style: TextStyle(
                             color:
                                 widget.shares_data[index]['status'] == 'Active'

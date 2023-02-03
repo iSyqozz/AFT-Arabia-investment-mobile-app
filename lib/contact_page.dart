@@ -95,7 +95,7 @@ class _ContactPageState extends State<ContactPage> {
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
       decoration: InputDecoration(
-        hintText: 'example@abc.com',
+        hintText: widget.screen_mode == Colors.white ? 'example@abc.com' : '',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(32.0),
@@ -168,14 +168,15 @@ class _ContactPageState extends State<ContactPage> {
           onPressed: () async {
             if (_formkey.currentState!.validate()) {
               try {
-                final response =
-                    await http.post(Uri.parse('http://192.168.1.43:5000/email'),
-                        body: json.encode({
-                          'subject': _subject_controller.text,
-                          'email': _email_controller.text,
-                          'body': _body_controller.text,
-                        }));
-                print(response.statusCode);
+                final response = await http.post(
+                    Uri.parse(
+                        'https://plankton-app-iiabn.ondigitalocean.app/email'),
+                    body: json.encode({
+                      'subject': _subject_controller.text,
+                      'email': _email_controller.text,
+                      'body': _body_controller.text,
+                    }));
+                //print(response.statusCode);
                 if (response.statusCode == 200) {
                   int tri_flag = 1;
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -205,6 +206,7 @@ class _ContactPageState extends State<ContactPage> {
                 }
                 int tri_flag = 2;
               } catch (e) {
+                //print(e.toString());
                 int tri_flag = 2;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
